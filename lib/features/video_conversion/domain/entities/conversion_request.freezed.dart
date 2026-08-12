@@ -20,6 +20,7 @@ mixin _$ConversionRequest {
   VideoFile get input => throw _privateConstructorUsedError;
   OutputFormat get outputFormat => throw _privateConstructorUsedError;
   String get outputPath => throw _privateConstructorUsedError;
+  ConversionPreset? get preset => throw _privateConstructorUsedError;
 
   /// Create a copy of ConversionRequest
   /// with the given fields replaced by the non-null parameter values.
@@ -35,9 +36,15 @@ abstract class $ConversionRequestCopyWith<$Res> {
     $Res Function(ConversionRequest) then,
   ) = _$ConversionRequestCopyWithImpl<$Res, ConversionRequest>;
   @useResult
-  $Res call({VideoFile input, OutputFormat outputFormat, String outputPath});
+  $Res call({
+    VideoFile input,
+    OutputFormat outputFormat,
+    String outputPath,
+    ConversionPreset? preset,
+  });
 
   $VideoFileCopyWith<$Res> get input;
+  $ConversionPresetCopyWith<$Res>? get preset;
 }
 
 /// @nodoc
@@ -58,6 +65,7 @@ class _$ConversionRequestCopyWithImpl<$Res, $Val extends ConversionRequest>
     Object? input = null,
     Object? outputFormat = null,
     Object? outputPath = null,
+    Object? preset = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -73,6 +81,10 @@ class _$ConversionRequestCopyWithImpl<$Res, $Val extends ConversionRequest>
                 ? _value.outputPath
                 : outputPath // ignore: cast_nullable_to_non_nullable
                       as String,
+            preset: freezed == preset
+                ? _value.preset
+                : preset // ignore: cast_nullable_to_non_nullable
+                      as ConversionPreset?,
           )
           as $Val,
     );
@@ -87,6 +99,20 @@ class _$ConversionRequestCopyWithImpl<$Res, $Val extends ConversionRequest>
       return _then(_value.copyWith(input: value) as $Val);
     });
   }
+
+  /// Create a copy of ConversionRequest
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $ConversionPresetCopyWith<$Res>? get preset {
+    if (_value.preset == null) {
+      return null;
+    }
+
+    return $ConversionPresetCopyWith<$Res>(_value.preset!, (value) {
+      return _then(_value.copyWith(preset: value) as $Val);
+    });
+  }
 }
 
 /// @nodoc
@@ -98,10 +124,17 @@ abstract class _$$ConversionRequestImplCopyWith<$Res>
   ) = __$$ConversionRequestImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({VideoFile input, OutputFormat outputFormat, String outputPath});
+  $Res call({
+    VideoFile input,
+    OutputFormat outputFormat,
+    String outputPath,
+    ConversionPreset? preset,
+  });
 
   @override
   $VideoFileCopyWith<$Res> get input;
+  @override
+  $ConversionPresetCopyWith<$Res>? get preset;
 }
 
 /// @nodoc
@@ -121,6 +154,7 @@ class __$$ConversionRequestImplCopyWithImpl<$Res>
     Object? input = null,
     Object? outputFormat = null,
     Object? outputPath = null,
+    Object? preset = freezed,
   }) {
     return _then(
       _$ConversionRequestImpl(
@@ -136,6 +170,10 @@ class __$$ConversionRequestImplCopyWithImpl<$Res>
             ? _value.outputPath
             : outputPath // ignore: cast_nullable_to_non_nullable
                   as String,
+        preset: freezed == preset
+            ? _value.preset
+            : preset // ignore: cast_nullable_to_non_nullable
+                  as ConversionPreset?,
       ),
     );
   }
@@ -148,6 +186,7 @@ class _$ConversionRequestImpl implements _ConversionRequest {
     required this.input,
     required this.outputFormat,
     required this.outputPath,
+    this.preset,
   });
 
   @override
@@ -156,10 +195,12 @@ class _$ConversionRequestImpl implements _ConversionRequest {
   final OutputFormat outputFormat;
   @override
   final String outputPath;
+  @override
+  final ConversionPreset? preset;
 
   @override
   String toString() {
-    return 'ConversionRequest(input: $input, outputFormat: $outputFormat, outputPath: $outputPath)';
+    return 'ConversionRequest(input: $input, outputFormat: $outputFormat, outputPath: $outputPath, preset: $preset)';
   }
 
   @override
@@ -171,11 +212,13 @@ class _$ConversionRequestImpl implements _ConversionRequest {
             (identical(other.outputFormat, outputFormat) ||
                 other.outputFormat == outputFormat) &&
             (identical(other.outputPath, outputPath) ||
-                other.outputPath == outputPath));
+                other.outputPath == outputPath) &&
+            (identical(other.preset, preset) || other.preset == preset));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, input, outputFormat, outputPath);
+  int get hashCode =>
+      Object.hash(runtimeType, input, outputFormat, outputPath, preset);
 
   /// Create a copy of ConversionRequest
   /// with the given fields replaced by the non-null parameter values.
@@ -194,6 +237,7 @@ abstract class _ConversionRequest implements ConversionRequest {
     required final VideoFile input,
     required final OutputFormat outputFormat,
     required final String outputPath,
+    final ConversionPreset? preset,
   }) = _$ConversionRequestImpl;
 
   @override
@@ -202,6 +246,8 @@ abstract class _ConversionRequest implements ConversionRequest {
   OutputFormat get outputFormat;
   @override
   String get outputPath;
+  @override
+  ConversionPreset? get preset;
 
   /// Create a copy of ConversionRequest
   /// with the given fields replaced by the non-null parameter values.

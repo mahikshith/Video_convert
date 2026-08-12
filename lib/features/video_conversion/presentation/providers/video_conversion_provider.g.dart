@@ -27,7 +27,7 @@ final videoImportRepositoryProvider =
 typedef VideoImportRepositoryRef =
     AutoDisposeProviderRef<VideoImportRepository>;
 String _$videoConversionRepositoryHash() =>
-    r'353433110464cd763605d727bb34de0d2b3c5026';
+    r'97a18804aff81dd0a8a89a3cf46ee25398755535';
 
 /// See also [videoConversionRepository].
 @ProviderFor(videoConversionRepository)
@@ -47,7 +47,7 @@ final videoConversionRepositoryProvider =
 typedef VideoConversionRepositoryRef =
     AutoDisposeProviderRef<VideoConversionRepository>;
 String _$videoConversionControllerHash() =>
-    r'42c233c9ffd135b525da0bb1fdc53394911cd8a5';
+    r'98d3beeae2fbdf168fd45f7774d0db43018b5694';
 
 /// See also [VideoConversionController].
 @ProviderFor(VideoConversionController)

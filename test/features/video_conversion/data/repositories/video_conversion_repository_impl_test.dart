@@ -37,6 +37,7 @@ void main() {
         () => dataSource.convert(
           inputPath: video.path,
           outputPath: request.outputPath,
+          preset: null,
         ),
       ).thenAnswer(
         (_) => Stream.fromIterable([
@@ -52,6 +53,7 @@ void main() {
         () => dataSource.convert(
           inputPath: video.path,
           outputPath: request.outputPath,
+          preset: null,
         ),
       ).called(1);
     });

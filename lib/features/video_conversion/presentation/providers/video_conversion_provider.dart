@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:video_converter_pro/core/error/failure.dart';
+import 'package:video_converter_pro/features/compression/domain/entities/conversion_preset.dart';
 import 'package:video_converter_pro/features/video_conversion/data/datasources/ffmpeg_datasource.dart';
 import 'package:video_converter_pro/features/video_conversion/data/repositories/video_conversion_repository_impl.dart';
 import 'package:video_converter_pro/features/video_conversion/domain/entities/conversion_request.dart';
@@ -26,24 +27,31 @@ VideoImportRepository videoImportRepository(Ref ref) {
 
 @riverpod
 VideoConversionRepository videoConversionRepository(Ref ref) {
-  return const VideoConversionRepositoryImpl(FfmpegDataSource());
+  return VideoConversionRepositoryImpl(FfmpegDataSource());
 }
 
 @riverpod
 class VideoConversionController extends _$VideoConversionController {
+  VideoFile? _selectedVideo;
+
   @override
   FutureOr<ConversionUiState> build() => const ConversionUiState.idle();
 
-  Future<void> pickAndConvert() async {
-    state = const AsyncData(ConversionUiState.idle());
-
-    final VideoFile video;
+  Future<void> pickVideo() async {
     try {
-      video = await ref.read(videoImportRepositoryProvider).pickVideo();
+      final video = await ref.read(videoImportRepositoryProvider).pickVideo();
+      _selectedVideo = video;
+      state = AsyncData(ConversionUiState.selectingPreset(video));
     } on NoVideoSelectedFailure {
-      state = const AsyncData(ConversionUiState.idle());
-      return;
+      // User backed out of the picker; stay on the current screen.
+    } catch (e, st) {
+      state = AsyncError(e is Failure ? e : ConversionFailure('$e'), st);
     }
+  }
+
+  Future<void> startConversion(ConversionPreset preset) async {
+    final video = _selectedVideo;
+    if (video == null) return;
 
     state = await AsyncValue.guard(() async {
       final outputDir = await getTemporaryDirectory();
@@ -55,6 +63,7 @@ class VideoConversionController extends _$VideoConversionController {
         input: video,
         outputFormat: OutputFormat.mp4,
         outputPath: outputPath,
+        preset: preset,
       );
 
       final stopwatch = Stopwatch()..start();
@@ -76,5 +85,14 @@ class VideoConversionController extends _$VideoConversionController {
         ),
       );
     });
+  }
+
+  Future<void> cancel() async {
+    await ref.read(videoConversionRepositoryProvider).cancel();
+  }
+
+  void reset() {
+    _selectedVideo = null;
+    state = const AsyncData(ConversionUiState.idle());
   }
 }

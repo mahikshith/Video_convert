@@ -35,6 +35,15 @@ Reason: Need a writable device directory to place converted output files. Sprint
   writes to the temp directory; a persistent "converted files" location is deferred to
   Sprint 5 (history/settings).
 
+## 2026-08-12 — share_plus for Results screen sharing
+Chosen: share_plus (MIT license, Flutter-team-maintained)
+Reason: PRD Feature 8 (Share Output) and the core user flow ("Save / Share" as the
+  final step, target <20s video-to-share) need a native share sheet. share_plus is
+  the standard cross-platform wrapper for iOS/Android share sheets. Not in the
+  original locked stack; added here per the package-addition rule. User pre-approved
+  package/architecture judgment calls for the remainder of this engagement
+  (2026-08-12), so this is logged rather than gated on a separate approval step.
+
 ## 2026-08-12 — mocktail for testing
 Chosen: mocktail (already specified in testing.instructions.md, formalizing here)
 Reason: Null-safe mocking without code generation, needed to test the

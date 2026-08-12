@@ -20,18 +20,21 @@ mixin _$ConversionUiState {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function() idle,
+    required TResult Function(VideoFile video) selectingPreset,
     required TResult Function(ConversionProgress progress) inProgress,
     required TResult Function(ConversionResult result) completed,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? idle,
+    TResult? Function(VideoFile video)? selectingPreset,
     TResult? Function(ConversionProgress progress)? inProgress,
     TResult? Function(ConversionResult result)? completed,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? idle,
+    TResult Function(VideoFile video)? selectingPreset,
     TResult Function(ConversionProgress progress)? inProgress,
     TResult Function(ConversionResult result)? completed,
     required TResult orElse(),
@@ -39,18 +42,21 @@ mixin _$ConversionUiState {
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(ConversionIdle value) idle,
+    required TResult Function(ConversionSelectingPreset value) selectingPreset,
     required TResult Function(ConversionInProgress value) inProgress,
     required TResult Function(ConversionCompleted value) completed,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(ConversionIdle value)? idle,
+    TResult? Function(ConversionSelectingPreset value)? selectingPreset,
     TResult? Function(ConversionInProgress value)? inProgress,
     TResult? Function(ConversionCompleted value)? completed,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(ConversionIdle value)? idle,
+    TResult Function(ConversionSelectingPreset value)? selectingPreset,
     TResult Function(ConversionInProgress value)? inProgress,
     TResult Function(ConversionCompleted value)? completed,
     required TResult orElse(),
@@ -123,6 +129,7 @@ class _$ConversionIdleImpl implements ConversionIdle {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function() idle,
+    required TResult Function(VideoFile video) selectingPreset,
     required TResult Function(ConversionProgress progress) inProgress,
     required TResult Function(ConversionResult result) completed,
   }) {
@@ -133,6 +140,7 @@ class _$ConversionIdleImpl implements ConversionIdle {
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? idle,
+    TResult? Function(VideoFile video)? selectingPreset,
     TResult? Function(ConversionProgress progress)? inProgress,
     TResult? Function(ConversionResult result)? completed,
   }) {
@@ -143,6 +151,7 @@ class _$ConversionIdleImpl implements ConversionIdle {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? idle,
+    TResult Function(VideoFile video)? selectingPreset,
     TResult Function(ConversionProgress progress)? inProgress,
     TResult Function(ConversionResult result)? completed,
     required TResult orElse(),
@@ -157,6 +166,7 @@ class _$ConversionIdleImpl implements ConversionIdle {
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(ConversionIdle value) idle,
+    required TResult Function(ConversionSelectingPreset value) selectingPreset,
     required TResult Function(ConversionInProgress value) inProgress,
     required TResult Function(ConversionCompleted value) completed,
   }) {
@@ -167,6 +177,7 @@ class _$ConversionIdleImpl implements ConversionIdle {
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(ConversionIdle value)? idle,
+    TResult? Function(ConversionSelectingPreset value)? selectingPreset,
     TResult? Function(ConversionInProgress value)? inProgress,
     TResult? Function(ConversionCompleted value)? completed,
   }) {
@@ -177,6 +188,7 @@ class _$ConversionIdleImpl implements ConversionIdle {
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(ConversionIdle value)? idle,
+    TResult Function(ConversionSelectingPreset value)? selectingPreset,
     TResult Function(ConversionInProgress value)? inProgress,
     TResult Function(ConversionCompleted value)? completed,
     required TResult orElse(),
@@ -190,6 +202,177 @@ class _$ConversionIdleImpl implements ConversionIdle {
 
 abstract class ConversionIdle implements ConversionUiState {
   const factory ConversionIdle() = _$ConversionIdleImpl;
+}
+
+/// @nodoc
+abstract class _$$ConversionSelectingPresetImplCopyWith<$Res> {
+  factory _$$ConversionSelectingPresetImplCopyWith(
+    _$ConversionSelectingPresetImpl value,
+    $Res Function(_$ConversionSelectingPresetImpl) then,
+  ) = __$$ConversionSelectingPresetImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({VideoFile video});
+
+  $VideoFileCopyWith<$Res> get video;
+}
+
+/// @nodoc
+class __$$ConversionSelectingPresetImplCopyWithImpl<$Res>
+    extends
+        _$ConversionUiStateCopyWithImpl<$Res, _$ConversionSelectingPresetImpl>
+    implements _$$ConversionSelectingPresetImplCopyWith<$Res> {
+  __$$ConversionSelectingPresetImplCopyWithImpl(
+    _$ConversionSelectingPresetImpl _value,
+    $Res Function(_$ConversionSelectingPresetImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of ConversionUiState
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({Object? video = null}) {
+    return _then(
+      _$ConversionSelectingPresetImpl(
+        null == video
+            ? _value.video
+            : video // ignore: cast_nullable_to_non_nullable
+                  as VideoFile,
+      ),
+    );
+  }
+
+  /// Create a copy of ConversionUiState
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $VideoFileCopyWith<$Res> get video {
+    return $VideoFileCopyWith<$Res>(_value.video, (value) {
+      return _then(_value.copyWith(video: value));
+    });
+  }
+}
+
+/// @nodoc
+
+class _$ConversionSelectingPresetImpl implements ConversionSelectingPreset {
+  const _$ConversionSelectingPresetImpl(this.video);
+
+  @override
+  final VideoFile video;
+
+  @override
+  String toString() {
+    return 'ConversionUiState.selectingPreset(video: $video)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$ConversionSelectingPresetImpl &&
+            (identical(other.video, video) || other.video == video));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, video);
+
+  /// Create a copy of ConversionUiState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$ConversionSelectingPresetImplCopyWith<_$ConversionSelectingPresetImpl>
+  get copyWith =>
+      __$$ConversionSelectingPresetImplCopyWithImpl<
+        _$ConversionSelectingPresetImpl
+      >(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() idle,
+    required TResult Function(VideoFile video) selectingPreset,
+    required TResult Function(ConversionProgress progress) inProgress,
+    required TResult Function(ConversionResult result) completed,
+  }) {
+    return selectingPreset(video);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? idle,
+    TResult? Function(VideoFile video)? selectingPreset,
+    TResult? Function(ConversionProgress progress)? inProgress,
+    TResult? Function(ConversionResult result)? completed,
+  }) {
+    return selectingPreset?.call(video);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? idle,
+    TResult Function(VideoFile video)? selectingPreset,
+    TResult Function(ConversionProgress progress)? inProgress,
+    TResult Function(ConversionResult result)? completed,
+    required TResult orElse(),
+  }) {
+    if (selectingPreset != null) {
+      return selectingPreset(video);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(ConversionIdle value) idle,
+    required TResult Function(ConversionSelectingPreset value) selectingPreset,
+    required TResult Function(ConversionInProgress value) inProgress,
+    required TResult Function(ConversionCompleted value) completed,
+  }) {
+    return selectingPreset(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(ConversionIdle value)? idle,
+    TResult? Function(ConversionSelectingPreset value)? selectingPreset,
+    TResult? Function(ConversionInProgress value)? inProgress,
+    TResult? Function(ConversionCompleted value)? completed,
+  }) {
+    return selectingPreset?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(ConversionIdle value)? idle,
+    TResult Function(ConversionSelectingPreset value)? selectingPreset,
+    TResult Function(ConversionInProgress value)? inProgress,
+    TResult Function(ConversionCompleted value)? completed,
+    required TResult orElse(),
+  }) {
+    if (selectingPreset != null) {
+      return selectingPreset(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class ConversionSelectingPreset implements ConversionUiState {
+  const factory ConversionSelectingPreset(final VideoFile video) =
+      _$ConversionSelectingPresetImpl;
+
+  VideoFile get video;
+
+  /// Create a copy of ConversionUiState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$ConversionSelectingPresetImplCopyWith<_$ConversionSelectingPresetImpl>
+  get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
@@ -280,6 +463,7 @@ class _$ConversionInProgressImpl implements ConversionInProgress {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function() idle,
+    required TResult Function(VideoFile video) selectingPreset,
     required TResult Function(ConversionProgress progress) inProgress,
     required TResult Function(ConversionResult result) completed,
   }) {
@@ -290,6 +474,7 @@ class _$ConversionInProgressImpl implements ConversionInProgress {
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? idle,
+    TResult? Function(VideoFile video)? selectingPreset,
     TResult? Function(ConversionProgress progress)? inProgress,
     TResult? Function(ConversionResult result)? completed,
   }) {
@@ -300,6 +485,7 @@ class _$ConversionInProgressImpl implements ConversionInProgress {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? idle,
+    TResult Function(VideoFile video)? selectingPreset,
     TResult Function(ConversionProgress progress)? inProgress,
     TResult Function(ConversionResult result)? completed,
     required TResult orElse(),
@@ -314,6 +500,7 @@ class _$ConversionInProgressImpl implements ConversionInProgress {
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(ConversionIdle value) idle,
+    required TResult Function(ConversionSelectingPreset value) selectingPreset,
     required TResult Function(ConversionInProgress value) inProgress,
     required TResult Function(ConversionCompleted value) completed,
   }) {
@@ -324,6 +511,7 @@ class _$ConversionInProgressImpl implements ConversionInProgress {
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(ConversionIdle value)? idle,
+    TResult? Function(ConversionSelectingPreset value)? selectingPreset,
     TResult? Function(ConversionInProgress value)? inProgress,
     TResult? Function(ConversionCompleted value)? completed,
   }) {
@@ -334,6 +522,7 @@ class _$ConversionInProgressImpl implements ConversionInProgress {
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(ConversionIdle value)? idle,
+    TResult Function(ConversionSelectingPreset value)? selectingPreset,
     TResult Function(ConversionInProgress value)? inProgress,
     TResult Function(ConversionCompleted value)? completed,
     required TResult orElse(),
@@ -444,6 +633,7 @@ class _$ConversionCompletedImpl implements ConversionCompleted {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function() idle,
+    required TResult Function(VideoFile video) selectingPreset,
     required TResult Function(ConversionProgress progress) inProgress,
     required TResult Function(ConversionResult result) completed,
   }) {
@@ -454,6 +644,7 @@ class _$ConversionCompletedImpl implements ConversionCompleted {
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? idle,
+    TResult? Function(VideoFile video)? selectingPreset,
     TResult? Function(ConversionProgress progress)? inProgress,
     TResult? Function(ConversionResult result)? completed,
   }) {
@@ -464,6 +655,7 @@ class _$ConversionCompletedImpl implements ConversionCompleted {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? idle,
+    TResult Function(VideoFile video)? selectingPreset,
     TResult Function(ConversionProgress progress)? inProgress,
     TResult Function(ConversionResult result)? completed,
     required TResult orElse(),
@@ -478,6 +670,7 @@ class _$ConversionCompletedImpl implements ConversionCompleted {
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(ConversionIdle value) idle,
+    required TResult Function(ConversionSelectingPreset value) selectingPreset,
     required TResult Function(ConversionInProgress value) inProgress,
     required TResult Function(ConversionCompleted value) completed,
   }) {
@@ -488,6 +681,7 @@ class _$ConversionCompletedImpl implements ConversionCompleted {
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(ConversionIdle value)? idle,
+    TResult? Function(ConversionSelectingPreset value)? selectingPreset,
     TResult? Function(ConversionInProgress value)? inProgress,
     TResult? Function(ConversionCompleted value)? completed,
   }) {
@@ -498,6 +692,7 @@ class _$ConversionCompletedImpl implements ConversionCompleted {
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(ConversionIdle value)? idle,
+    TResult Function(ConversionSelectingPreset value)? selectingPreset,
     TResult Function(ConversionInProgress value)? inProgress,
     TResult Function(ConversionCompleted value)? completed,
     required TResult orElse(),

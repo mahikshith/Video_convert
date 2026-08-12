@@ -10,7 +10,10 @@ missing Chrome and Visual Studio, but those aren't required for this project (An
 targets only).
 **Workaround:** Deferred by user decision — Android SDK install postponed to a later
 session. iOS build will likely need a Mac or a macOS CI runner (Codemagic/GitHub Actions).
-**Fix planned:** yes, before formally closing Sprint 1
+**Fix planned:** yes, before formally closing Sprint 1. As of Sprint 3, this also
+blocks verifying: compression/destination preset output (resolution, bitrate, file
+size actually hit their targets), Cancel actually stopping FFmpeg mid-encode, and
+the Email preset's target-size bitrate math.
 
 ### 2026-08-12 — android/ and ios/ platform folders missing from the repo (RESOLVED)
 **Severity:** Major

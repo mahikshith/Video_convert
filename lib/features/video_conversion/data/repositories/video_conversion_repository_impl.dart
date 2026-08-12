@@ -13,6 +13,10 @@ class VideoConversionRepositoryImpl implements VideoConversionRepository {
     return _dataSource.convert(
       inputPath: request.input.path,
       outputPath: request.outputPath,
+      preset: request.preset,
     );
   }
+
+  @override
+  Future<void> cancel() => _dataSource.cancel();
 }

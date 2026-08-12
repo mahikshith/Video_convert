@@ -1,68 +1,70 @@
 # Current State
 
-**Sprint:** 02 — FFmpeg Engine (implemented, real-device smoke test still pending)
+**Sprint:** 03 — Presets UI (implemented, real-device smoke test still pending)
 **Branch:** work
-**Last Commit:** 7ad24b0 (Sprint 2 FFmpeg engine) — platform folder regen not yet committed
+**Last Commit:** ca9c4fb (platform folder regen) — Sprint 3 work not yet committed
 
 ## Completed
 ### Sprint 1
-- Documentation system scaffolded (Phase 1)
-- Flutter SDK reinstalled at C:\flutter (v3.44.9, Dart 3.12.2) after a Windows reset wiped
-  the prior install
+- Flutter SDK reinstalled at C:\flutter (v3.44.9, Dart 3.12.2) after a Windows reset
 - Feature-first folder structure, Material 3 dark theme, logger service, go_router,
-  strict lint config
-- `flutter analyze` passes with zero issues
+  strict lint config, `flutter analyze` zero issues
 
 ### Sprint 2
-- `core/error/failure.dart` — sealed `Failure` hierarchy
-- `video_import` feature: `VideoFile` entity, repository + `file_picker`-backed
-  datasource
-- `video_conversion` feature: `OutputFormat`, `ConversionRequest`,
-  `ConversionProgress`, `ConversionResult` entities; `FfmpegCommandBuilder`
-  (pure, testable); `FfmpegDataSource` (FFmpegKit execution + FFprobeKit duration +
-  statistics-callback progress); repository; `VideoConversionController`
-  (`@riverpod` notifier, `ConversionUiState` union: idle/inProgress/completed)
-- `HomePage` wired end-to-end: Select Video → pick file → convert → show
-  progress → show before/after size
-- Unit tests: command builder + both repositories (mocktail) — 6/6 passing
-- `flutter analyze`: zero issues. `flutter test`: all passing.
-- `android/`, `ios/`, `web/`, `linux/`, `macos/`, `windows/` platform folders
-  regenerated via `flutter create .` (they were missing entirely — see
-  Blockers history below). Removed the default counter-app `test/widget_test.dart`
-  the regen dropped in (referenced a `MyApp` class that doesn't exist in this
-  project). `.metadata` added to git (standard Flutter tracking file, not
-  gitignored). analyze/test re-verified clean afterward.
+- FFmpeg conversion engine: video_import (file_picker), video_conversion
+  (FfmpegCommandBuilder, FfmpegDataSource with FFmpegKit + FFprobeKit + statistics
+  progress), sealed `Failure` hierarchy, Riverpod controller, HomePage wired
+  end-to-end. `flutter analyze`/`flutter test` clean.
+- `android/`, `ios/`, `web/`, `linux/`, `macos/`, `windows/` regenerated via
+  `flutter create .` (were missing entirely after the Windows reset — gitignored,
+  never tracked by git)
+
+### Sprint 3
+- `compression` feature: `CompressionPreset` (4 tiers), `DestinationPreset`
+  (5 targets), unified `ConversionPreset` union, `EncodingSettings`
+- `EncodingSettingsResolver` — preset → concrete FFmpeg settings, including
+  target-file-size bitrate math for the Email preset
+- `FfmpegCommandBuilder` extended: resolution-capping scale filter, fixed
+  bitrate or CRF, audio bitrate
+- Cancel wired end-to-end (FfmpegDataSource tracks the active FFmpegSession)
+- Three new screens: Conversion Setup (preset picker), Progress (ring +
+  cancel), Results (before/after size, Save to app documents, Share via
+  `share_plus`)
+- `go_router`: `/setup`, `/progress`, `/results`; HomePage simplified back
+  to just the entry point
+- `flutter analyze`: zero issues. `flutter test`: 13/13 passing.
 
 ## In Progress
-- Committing the platform-folder regeneration
-- Real device/emulator smoke test of the FFmpeg conversion path — blocked,
-  see Blockers
+- Sprint 3 commit — pending
+- Real device/emulator smoke test — blocked, see Blockers (same as Sprint 2,
+  now also covering preset resolution/bitrate math and Cancel)
 
 ## Not Started
-- Sprint 3+ (compression presets, destination presets, full preset UI, GIF,
-  audio extraction, history, paywall, onboarding, store prep)
+- Sprint 4+ (GIF, audio extraction, history, settings, paywall, onboarding,
+  store prep)
 
 ## Blockers
 - No Android SDK installed on this machine — deferred by user decision on
-  2026-08-12. `android/` platform folder now exists again, but there's still
-  no SDK to build against.
+  2026-08-12.
 - No macOS/Xcode available for iOS build/run.
-- Because of the above, the FFmpeg execution path (native binary invocation,
-  statistics-callback progress parsing, FFprobeKit duration lookup) is
+- FFmpeg execution path (native binary invocation, statistics parsing,
+  scale-filter/bitrate/CRF behavior, cancel, Email preset's bitrate math) is
   implemented and unit-tested at the Dart level only — never run against a
-  real video file or a real FFmpeg binary yet. Treat as unverified until a
-  device/emulator smoke test happens.
+  real video file. Treat as unverified until a device/emulator smoke test
+  happens.
 
 ## Notes
 - Standard env setup:
   ```
   $env:Path = "C:\flutter\bin;" + $env:Path
   ```
-  No mirror env vars needed — direct pub.dev/storage.googleapis.com access
-  confirmed working.
-- New packages added in Sprint 2 (see docs/DECISIONS.md for full reasoning):
-  `file_picker` (video import), `path_provider` (output file location,
-  promoted from transitive to direct dependency), `mocktail` (test doubles).
-  `freezed_annotation`/`json_annotation` moved from dev_dependencies to
-  dependencies (they're referenced by runtime code, not just codegen).
+- User has waived the per-sprint plan-approval gate for the remainder of
+  this engagement ("keep working, don't need my permission between
+  sprints") — continuing to log package/architecture decisions in
+  docs/DECISIONS.md but not pausing for approval before each sprint.
+- New package this sprint: `share_plus` (^10.1.4) for the Results screen's
+  Share button — logged in docs/DECISIONS.md. Its actual API was verified
+  by reading the installed package source directly (the first guess,
+  `SharePlus.instance.share(ShareParams(...))`, was wrong for this version;
+  correct is the static `Share.shareXFiles(...)`).
 - Git remote uses token auth: origin is configured with PAT.
