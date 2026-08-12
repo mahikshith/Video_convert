@@ -1,54 +1,64 @@
 # Current State
 
-**Sprint:** 01 — Flutter Scaffold
+**Sprint:** 02 — FFmpeg Engine (implemented, real-device smoke test pending)
 **Branch:** work
-**Last Commit:** d0dbcb1 (Flutter project structure and dependencies) — this session's fixes not yet committed
+**Last Commit:** 91c08a7 (Sprint 1 analyzer fixes) — this session's Sprint 2 work not yet committed
 
 ## Completed
+### Sprint 1
 - Documentation system scaffolded (Phase 1)
-- Copilot instructions configured
-- Sprint plans drafted
 - Flutter SDK reinstalled at C:\flutter (v3.44.9, Dart 3.12.2) after a Windows reset wiped
-  the prior install (see Notes)
-- pubspec.yaml configured with locked tech stack
-- Feature-first folder structure created under lib/
-- Core theme (Material 3, dark mode, #2563EB)
-- Logger service (no print())
-- Placeholder HomePage with Select Video CTA
-- go_router with single route
-- analysis_options.yaml with strict lint rules
-- Android and iOS platform scaffolds
-- dart pub get succeeded (112 dependencies resolved)
-- `flutter analyze` passes with **zero issues** (fixed: removed a deprecated lint rule
-  reference `avoid_returning_null_for_future`; added/corrected `const` on
-  `ColorScheme.dark(...)` in lib/core/theme/app_theme.dart)
+  the prior install
+- Feature-first folder structure, Material 3 dark theme, logger service, go_router,
+  strict lint config
+- `flutter analyze` passes with zero issues
+
+### Sprint 2
+- `core/error/failure.dart` — sealed `Failure` hierarchy
+- `video_import` feature: `VideoFile` entity, repository + `file_picker`-backed
+  datasource
+- `video_conversion` feature: `OutputFormat`, `ConversionRequest`,
+  `ConversionProgress`, `ConversionResult` entities; `FfmpegCommandBuilder`
+  (pure, testable); `FfmpegDataSource` (FFmpegKit execution + FFprobeKit duration +
+  statistics-callback progress); repository; `VideoConversionController`
+  (`@riverpod` notifier, `ConversionUiState` union: idle/inProgress/completed)
+- `HomePage` wired end-to-end: Select Video → pick file → convert → show
+  progress → show before/after size
+- Unit tests: command builder + both repositories (mocktail) — 6/6 passing
+- `flutter analyze`: zero issues. `flutter test`: all passing.
 
 ## In Progress
-- Sprint 1 build verification ("app launches on at least one platform") — blocked, see Blockers
-- Sprint 1 commit for this session's fixes — pending
+- Sprint 2 commit — pending
+- Real device/emulator smoke test of the FFmpeg conversion path — blocked,
+  see Blockers
 
 ## Not Started
-- All feature work (Sprint 2+)
+- Sprint 3+ (compression presets, destination presets, full preset UI, GIF,
+  audio extraction, history, paywall, onboarding, store prep)
 
 ## Blockers
-- No Android SDK installed on this machine — `flutter build apk --debug` cannot run yet.
-  Deferred by user decision on 2026-08-12; revisit before calling Sprint 1 fully done.
-- No macOS/Xcode available — `flutter build ios --debug --no-codesign` cannot be verified
-  from this machine at all; will need a Mac or CI (e.g. Codemagic/GitHub Actions macOS
-  runner) later.
-- `flutter doctor` also reports no Chrome and no Visual Studio, but neither is required
-  for this project's target platforms (Android/iOS only).
+- No Android SDK installed on this machine — deferred by user decision on
+  2026-08-12.
+- No macOS/Xcode available for iOS build/run.
+- `android/` and `ios/` platform folders don't currently exist in the repo at
+  all (git-ignored as "platform generated"; wiped by the Windows reset, never
+  tracked by git). Need `flutter create .` before any real build/run.
+- Because of the above, the FFmpeg execution path (native binary invocation,
+  statistics-callback progress parsing, FFprobeKit duration lookup) is
+  implemented and unit-tested at the Dart level only — never run against a
+  real video file or a real FFmpeg binary yet. Treat as unverified until a
+  device/emulator smoke test happens.
 
 ## Notes
-- The corporate-network mirror workaround from the previous session (China mirror env
-  vars for storage.googleapis.com/pub.dev) is **no longer needed** — direct connectivity
-  to pub.dev and storage.googleapis.com was confirmed working on 2026-08-12. Do not set
-  FLUTTER_STORAGE_BASE_URL / PUB_HOSTED_URL unless connectivity issues reappear.
-- Standard env setup going forward:
+- Standard env setup:
   ```
   $env:Path = "C:\flutter\bin;" + $env:Path
   ```
-- The machine's Flutter SDK was wiped by a Windows reset (C:\Windows.old present) between
-  sessions. Reinstalled via `git clone https://github.com/flutter/flutter.git -b 3.44.9`
-  to C:\flutter, then `flutter precache` + `flutter pub get`, both directly (no mirror).
+  No mirror env vars needed — direct pub.dev/storage.googleapis.com access
+  confirmed working.
+- New packages added this session (see docs/DECISIONS.md for full reasoning):
+  `file_picker` (video import), `path_provider` (output file location,
+  promoted from transitive to direct dependency), `mocktail` (test doubles).
+  `freezed_annotation`/`json_annotation` moved from dev_dependencies to
+  dependencies (they're referenced by runtime code, not just codegen).
 - Git remote uses token auth: origin is configured with PAT.
