@@ -22,6 +22,18 @@ class HomePage extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Video Converter Pro'),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.history_rounded),
+            tooltip: 'History',
+            onPressed: () => context.push('/history'),
+          ),
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            tooltip: 'Settings',
+            onPressed: () => context.push('/settings'),
+          ),
+        ],
       ),
       body: Center(
         child: Padding(

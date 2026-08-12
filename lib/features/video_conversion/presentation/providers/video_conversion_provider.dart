@@ -5,8 +5,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:video_converter_pro/core/error/failure.dart';
+import 'package:video_converter_pro/core/services/logger_service.dart';
 import 'package:video_converter_pro/features/compression/domain/entities/conversion_preset.dart';
 import 'package:video_converter_pro/features/gif_creation/domain/entities/gif_options.dart';
+import 'package:video_converter_pro/features/history/domain/entities/conversion_history_entry.dart';
+import 'package:video_converter_pro/features/history/presentation/providers/history_provider.dart';
 import 'package:video_converter_pro/features/video_conversion/data/datasources/ffmpeg_datasource.dart';
 import 'package:video_converter_pro/features/video_conversion/data/repositories/video_conversion_repository_impl.dart';
 import 'package:video_converter_pro/features/video_conversion/domain/entities/conversion_request.dart';
@@ -81,6 +84,25 @@ class VideoConversionController extends _$VideoConversionController {
 
       final outputFile = File(outputPath);
       final outputSizeBytes = await outputFile.length();
+
+      final now = DateTime.now();
+      try {
+        await ref.read(historyControllerProvider.notifier).add(
+              ConversionHistoryEntry(
+                id: now.microsecondsSinceEpoch.toString(),
+                inputFileName: video.name,
+                outputPath: outputPath,
+                outputExtension: outputFormat.extension,
+                inputSizeBytes: video.sizeBytes,
+                outputSizeBytes: outputSizeBytes,
+                timestamp: now,
+              ),
+            );
+      } catch (e, st) {
+        // A completed conversion shouldn't fail just because history
+        // logging did; the user still gets their converted file.
+        LoggerService.error('Failed to save history entry', error: e, stackTrace: st);
+      }
 
       return ConversionUiState.completed(
         ConversionResult(

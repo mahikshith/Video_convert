@@ -5,6 +5,7 @@ import 'package:video_converter_pro/features/compression/domain/entities/compres
 import 'package:video_converter_pro/features/compression/domain/entities/conversion_preset.dart';
 import 'package:video_converter_pro/features/compression/domain/entities/destination_preset.dart';
 import 'package:video_converter_pro/features/gif_creation/domain/entities/gif_options.dart';
+import 'package:video_converter_pro/features/settings/presentation/providers/settings_provider.dart';
 import 'package:video_converter_pro/features/video_conversion/domain/entities/output_format.dart';
 import 'package:video_converter_pro/features/video_conversion/presentation/providers/conversion_ui_state.dart';
 import 'package:video_converter_pro/features/video_conversion/presentation/providers/video_conversion_provider.dart';
@@ -23,6 +24,7 @@ class _ConversionSetupPageState extends ConsumerState<ConversionSetupPage> {
   OutputFormat _videoFormat = OutputFormat.mp4;
   ConversionPreset _preset =
       const ConversionPreset.compression(CompressionPreset.medium);
+  bool _presetTouchedByUser = false;
 
   OutputFormat _audioFormat = OutputFormat.mp3;
 
@@ -50,6 +52,12 @@ class _ConversionSetupPageState extends ConsumerState<ConversionSetupPage> {
         context.go('/progress');
       }
     });
+
+    if (!_presetTouchedByUser) {
+      ref.watch(defaultPresetControllerProvider).whenData((preset) {
+        _preset = preset;
+      });
+    }
 
     final uiState = ref.watch(videoConversionControllerProvider).valueOrNull;
     final video =
@@ -90,7 +98,10 @@ class _ConversionSetupPageState extends ConsumerState<ConversionSetupPage> {
                 onFormatChanged: (format) =>
                     setState(() => _videoFormat = format),
                 preset: _preset,
-                onPresetChanged: (preset) => setState(() => _preset = preset),
+                onPresetChanged: (preset) => setState(() {
+                  _preset = preset;
+                  _presetTouchedByUser = true;
+                }),
               ),
             OutputKind.gif => _GifOptionsForm(
                 startSeconds: _gifStartSeconds,

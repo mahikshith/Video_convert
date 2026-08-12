@@ -1,62 +1,54 @@
 # Current State
 
-**Sprint:** 04 — GIF & Audio (implemented, real-device smoke test still pending)
+**Sprint:** 05 — History & Settings (implemented, real-device smoke test still pending)
 **Branch:** work
-**Last Commit:** f4f43cc (Sprint 3 presets UI) — Sprint 4 work not yet committed
+**Last Commit:** 2a50ee3 (Sprint 4 GIF & audio) — Sprint 5 work not yet committed
 
 ## Completed
-### Sprint 1
-- Flutter SDK reinstalled at C:\flutter (v3.44.9) after a Windows reset;
-  feature-first structure, Material 3 theme, logger, go_router, strict lints.
+### Sprints 1-4
+- Flutter scaffold, FFmpeg conversion engine (video/GIF/audio), compression
+  and destination presets, Conversion Setup → Progress → Results flow with
+  Cancel/Save/Share. See prior sprint files under tasks/ for detail.
+- Platform folders regenerated after a Windows reset wiped the previous
+  Flutter install (see Sprint 2 notes / KNOWN_ISSUES.md).
 
-### Sprint 2
-- FFmpeg conversion engine: video_import, video_conversion (command builder,
-  FFmpegKit + FFprobeKit datasource, statistics progress), sealed `Failure`
-  hierarchy, Riverpod controller, HomePage wired end-to-end.
-- Platform folders (`android/`, `ios/`, etc.) regenerated via `flutter create .`
-  after the Windows reset wiped them (gitignored, never tracked by git).
-
-### Sprint 3
-- Compression presets (4 tiers) + destination presets (5 targets) via a
-  unified `ConversionPreset` union and `EncodingSettingsResolver`.
-- Conversion Setup → Progress → Results screen flow with go_router routes;
-  Cancel wired end-to-end; Results screen Save (app documents) + Share
-  (`share_plus`).
-
-### Sprint 4
-- `OutputFormat` gained an `OutputKind` (video/gif/audio) and `gif`/`mp3`/
-  `aac`/`wav` members.
-- `gif_creation` feature: `GifOptions` (start, end, fps).
-- `FfmpegCommandBuilder`: `buildAudioExtractCommand` (codec per format,
-  `-vn`), `buildGifCommand` (fps+scale+lanczos filter, `-loop 0`,
-  conditional trim).
-- `FfmpegDataSource.convert` branches on `outputFormat.kind`; GIF progress
-  percentage is computed against the trimmed clip duration, not the full
-  video.
-- `ConversionSetupPage` gained a Video/GIF/Audio segmented selector with
-  per-kind options (video format + presets / GIF trim + fps / audio format).
-- `flutter analyze`: zero issues. `flutter test`: 20/20 passing.
+### Sprint 5
+- `Hive.initFlutter()` wired into `main.dart` (Hive was a dependency since
+  Sprint 1 but never actually initialized).
+- `history` feature: `ConversionHistoryEntry` (freezed + json_serializable),
+  Hive-backed repository (stores entries as plain Maps — no
+  hive_generator/TypeAdapter needed), `HistoryController`.
+- Conversions now auto-save to history on completion (failure to save
+  doesn't fail the conversion itself).
+- `HistoryPage`: list, per-item share/delete, clear-all with confirmation.
+- `settings` feature: `SettingsRepository` over `shared_preferences`
+  (already a locked-stack dependency), encodes the default `ConversionPreset`
+  as a string key. `SettingsPage`: default-preset picker, clear history.
+- `go_router`: `/history`, `/settings` (pushed, not replaced, so back
+  returns to Home). `ConversionSetupPage` now pre-fills from the default
+  preset setting until the user manually changes it.
+- `flutter analyze`: zero issues. `flutter test`: 30/30 passing.
 
 ## In Progress
-- Sprint 4 commit — pending
+- Sprint 5 commit — pending
 - Real device/emulator smoke test — blocked, see Blockers (now also
-  covering GIF output validity, WAV playability, and unbounded GIF
-  start/end input)
+  covering Hive persistence across restarts and history file availability)
 
 ## Not Started
-- Sprint 5+ (history, settings, paywall, onboarding, store prep)
+- Sprint 6+ (paywall/RevenueCat, onboarding, store prep)
 
 ## Blockers
 - No Android SDK installed on this machine — deferred by user decision on
   2026-08-12.
 - No macOS/Xcode available for iOS build/run.
-- FFmpeg execution path (all conversion kinds: video convert, compression/
-  destination presets, GIF, audio extract, cancel) is implemented and
-  unit-tested at the Dart level only — never run against a real video file.
-  Treat as unverified until a device/emulator smoke test happens.
-- GIF start/end fields in Conversion Setup are unbounded free-form number
-  inputs (no known video duration client-side until FFprobe runs at
-  conversion time) — no validation against actual video length yet.
+- Everything FFmpeg-related (all conversion kinds, presets, cancel) plus
+  now Hive persistence is implemented and unit-tested at the Dart level
+  only — never run against a real device. Treat as unverified until a
+  device/emulator smoke test happens.
+- Upcoming Sprint 6 (Paywall/RevenueCat) and Sprint 7 (onboarding, if it
+  touches Firebase Analytics) will need real RevenueCat/Firebase project
+  credentials that only the user can provide — flagging now so it's not a
+  surprise blocker later.
 
 ## Notes
 - Standard env setup:
@@ -66,4 +58,6 @@
 - User has waived the per-sprint plan-approval gate for the remainder of
   this engagement — continuing to log package/architecture decisions in
   docs/DECISIONS.md but not pausing for approval before each sprint.
+- No new packages added in Sprint 5 (Hive and shared_preferences were
+  already locked-stack, just not yet wired up).
 - Git remote uses token auth: origin is configured with PAT.
