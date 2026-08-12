@@ -13,7 +13,9 @@ class VideoConversionRepositoryImpl implements VideoConversionRepository {
     return _dataSource.convert(
       inputPath: request.input.path,
       outputPath: request.outputPath,
+      outputFormat: request.outputFormat,
       preset: request.preset,
+      gifOptions: request.gifOptions,
     );
   }
 

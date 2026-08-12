@@ -37,7 +37,9 @@ void main() {
         () => dataSource.convert(
           inputPath: video.path,
           outputPath: request.outputPath,
+          outputFormat: OutputFormat.mp4,
           preset: null,
+          gifOptions: null,
         ),
       ).thenAnswer(
         (_) => Stream.fromIterable([
@@ -53,7 +55,9 @@ void main() {
         () => dataSource.convert(
           inputPath: video.path,
           outputPath: request.outputPath,
+          outputFormat: OutputFormat.mp4,
           preset: null,
+          gifOptions: null,
         ),
       ).called(1);
     });

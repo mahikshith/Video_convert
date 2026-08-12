@@ -21,6 +21,7 @@ mixin _$ConversionRequest {
   OutputFormat get outputFormat => throw _privateConstructorUsedError;
   String get outputPath => throw _privateConstructorUsedError;
   ConversionPreset? get preset => throw _privateConstructorUsedError;
+  GifOptions? get gifOptions => throw _privateConstructorUsedError;
 
   /// Create a copy of ConversionRequest
   /// with the given fields replaced by the non-null parameter values.
@@ -41,10 +42,12 @@ abstract class $ConversionRequestCopyWith<$Res> {
     OutputFormat outputFormat,
     String outputPath,
     ConversionPreset? preset,
+    GifOptions? gifOptions,
   });
 
   $VideoFileCopyWith<$Res> get input;
   $ConversionPresetCopyWith<$Res>? get preset;
+  $GifOptionsCopyWith<$Res>? get gifOptions;
 }
 
 /// @nodoc
@@ -66,6 +69,7 @@ class _$ConversionRequestCopyWithImpl<$Res, $Val extends ConversionRequest>
     Object? outputFormat = null,
     Object? outputPath = null,
     Object? preset = freezed,
+    Object? gifOptions = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -85,6 +89,10 @@ class _$ConversionRequestCopyWithImpl<$Res, $Val extends ConversionRequest>
                 ? _value.preset
                 : preset // ignore: cast_nullable_to_non_nullable
                       as ConversionPreset?,
+            gifOptions: freezed == gifOptions
+                ? _value.gifOptions
+                : gifOptions // ignore: cast_nullable_to_non_nullable
+                      as GifOptions?,
           )
           as $Val,
     );
@@ -113,6 +121,20 @@ class _$ConversionRequestCopyWithImpl<$Res, $Val extends ConversionRequest>
       return _then(_value.copyWith(preset: value) as $Val);
     });
   }
+
+  /// Create a copy of ConversionRequest
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $GifOptionsCopyWith<$Res>? get gifOptions {
+    if (_value.gifOptions == null) {
+      return null;
+    }
+
+    return $GifOptionsCopyWith<$Res>(_value.gifOptions!, (value) {
+      return _then(_value.copyWith(gifOptions: value) as $Val);
+    });
+  }
 }
 
 /// @nodoc
@@ -129,12 +151,15 @@ abstract class _$$ConversionRequestImplCopyWith<$Res>
     OutputFormat outputFormat,
     String outputPath,
     ConversionPreset? preset,
+    GifOptions? gifOptions,
   });
 
   @override
   $VideoFileCopyWith<$Res> get input;
   @override
   $ConversionPresetCopyWith<$Res>? get preset;
+  @override
+  $GifOptionsCopyWith<$Res>? get gifOptions;
 }
 
 /// @nodoc
@@ -155,6 +180,7 @@ class __$$ConversionRequestImplCopyWithImpl<$Res>
     Object? outputFormat = null,
     Object? outputPath = null,
     Object? preset = freezed,
+    Object? gifOptions = freezed,
   }) {
     return _then(
       _$ConversionRequestImpl(
@@ -174,6 +200,10 @@ class __$$ConversionRequestImplCopyWithImpl<$Res>
             ? _value.preset
             : preset // ignore: cast_nullable_to_non_nullable
                   as ConversionPreset?,
+        gifOptions: freezed == gifOptions
+            ? _value.gifOptions
+            : gifOptions // ignore: cast_nullable_to_non_nullable
+                  as GifOptions?,
       ),
     );
   }
@@ -187,6 +217,7 @@ class _$ConversionRequestImpl implements _ConversionRequest {
     required this.outputFormat,
     required this.outputPath,
     this.preset,
+    this.gifOptions,
   });
 
   @override
@@ -197,10 +228,12 @@ class _$ConversionRequestImpl implements _ConversionRequest {
   final String outputPath;
   @override
   final ConversionPreset? preset;
+  @override
+  final GifOptions? gifOptions;
 
   @override
   String toString() {
-    return 'ConversionRequest(input: $input, outputFormat: $outputFormat, outputPath: $outputPath, preset: $preset)';
+    return 'ConversionRequest(input: $input, outputFormat: $outputFormat, outputPath: $outputPath, preset: $preset, gifOptions: $gifOptions)';
   }
 
   @override
@@ -213,12 +246,20 @@ class _$ConversionRequestImpl implements _ConversionRequest {
                 other.outputFormat == outputFormat) &&
             (identical(other.outputPath, outputPath) ||
                 other.outputPath == outputPath) &&
-            (identical(other.preset, preset) || other.preset == preset));
+            (identical(other.preset, preset) || other.preset == preset) &&
+            (identical(other.gifOptions, gifOptions) ||
+                other.gifOptions == gifOptions));
   }
 
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, input, outputFormat, outputPath, preset);
+  int get hashCode => Object.hash(
+    runtimeType,
+    input,
+    outputFormat,
+    outputPath,
+    preset,
+    gifOptions,
+  );
 
   /// Create a copy of ConversionRequest
   /// with the given fields replaced by the non-null parameter values.
@@ -238,6 +279,7 @@ abstract class _ConversionRequest implements ConversionRequest {
     required final OutputFormat outputFormat,
     required final String outputPath,
     final ConversionPreset? preset,
+    final GifOptions? gifOptions,
   }) = _$ConversionRequestImpl;
 
   @override
@@ -248,6 +290,8 @@ abstract class _ConversionRequest implements ConversionRequest {
   String get outputPath;
   @override
   ConversionPreset? get preset;
+  @override
+  GifOptions? get gifOptions;
 
   /// Create a copy of ConversionRequest
   /// with the given fields replaced by the non-null parameter values.

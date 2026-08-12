@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:video_converter_pro/core/services/ffmpeg_command_builder.dart';
 import 'package:video_converter_pro/features/compression/domain/entities/encoding_settings.dart';
+import 'package:video_converter_pro/features/gif_creation/domain/entities/gif_options.dart';
+import 'package:video_converter_pro/features/video_conversion/domain/entities/output_format.dart';
 
 void main() {
   group('FfmpegCommandBuilder', () {
@@ -78,6 +80,102 @@ void main() {
 
       expect(args, containsAllInOrder(['-crf', '24']));
       expect(args, isNot(contains('-b:v')));
+    });
+  });
+
+  group('FfmpegCommandBuilder.buildAudioExtractCommand', () {
+    const builder = FfmpegCommandBuilder();
+
+    test('drops video with -vn', () {
+      final args = builder.buildAudioExtractCommand(
+        inputPath: '/tmp/input.mov',
+        outputPath: '/tmp/output.mp3',
+        format: OutputFormat.mp3,
+      );
+
+      expect(args, contains('-vn'));
+    });
+
+    test('uses libmp3lame for mp3', () {
+      final args = builder.buildAudioExtractCommand(
+        inputPath: '/tmp/input.mov',
+        outputPath: '/tmp/output.mp3',
+        format: OutputFormat.mp3,
+      );
+
+      expect(args, containsAllInOrder(['-c:a', 'libmp3lame']));
+    });
+
+    test('uses pcm_s16le for wav (no bitrate flag)', () {
+      final args = builder.buildAudioExtractCommand(
+        inputPath: '/tmp/input.mov',
+        outputPath: '/tmp/output.wav',
+        format: OutputFormat.wav,
+      );
+
+      expect(args, containsAllInOrder(['-c:a', 'pcm_s16le']));
+      expect(args, isNot(contains('-b:a')));
+    });
+
+    test('rejects a non-audio format', () {
+      expect(
+        () => builder.buildAudioExtractCommand(
+          inputPath: '/tmp/input.mov',
+          outputPath: '/tmp/output.mp4',
+          format: OutputFormat.mp4,
+        ),
+        throwsArgumentError,
+      );
+    });
+  });
+
+  group('FfmpegCommandBuilder.buildGifCommand', () {
+    const builder = FfmpegCommandBuilder();
+
+    test('includes fps filter and loop flag', () {
+      final args = builder.buildGifCommand(
+        inputPath: '/tmp/input.mov',
+        outputPath: '/tmp/output.gif',
+        options: const GifOptions(
+          start: Duration.zero,
+          end: Duration(seconds: 5),
+          fps: 15,
+        ),
+      );
+
+      expect(args, contains('-vf'));
+      final filterIndex = args.indexOf('-vf') + 1;
+      expect(args[filterIndex], contains('fps=15'));
+      expect(args, containsAllInOrder(['-loop', '0']));
+    });
+
+    test('omits -ss when start is zero', () {
+      final args = builder.buildGifCommand(
+        inputPath: '/tmp/input.mov',
+        outputPath: '/tmp/output.gif',
+        options: const GifOptions(
+          start: Duration.zero,
+          end: Duration(seconds: 5),
+          fps: 12,
+        ),
+      );
+
+      expect(args, isNot(contains('-ss')));
+    });
+
+    test('includes -ss and -t when a non-zero start is given', () {
+      final args = builder.buildGifCommand(
+        inputPath: '/tmp/input.mov',
+        outputPath: '/tmp/output.gif',
+        options: const GifOptions(
+          start: Duration(seconds: 2),
+          end: Duration(seconds: 7),
+          fps: 12,
+        ),
+      );
+
+      expect(args, contains('-ss'));
+      expect(args, contains('-t'));
     });
   });
 }

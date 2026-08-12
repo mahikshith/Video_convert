@@ -13,7 +13,22 @@ session. iOS build will likely need a Mac or a macOS CI runner (Codemagic/GitHub
 **Fix planned:** yes, before formally closing Sprint 1. As of Sprint 3, this also
 blocks verifying: compression/destination preset output (resolution, bitrate, file
 size actually hit their targets), Cancel actually stopping FFmpeg mid-encode, and
-the Email preset's target-size bitrate math.
+the Email preset's target-size bitrate math. As of Sprint 4, also blocks verifying
+GIF output validity, WAV playability, and audio codec correctness.
+
+### 2026-08-12 — GIF trim start/end fields are unbounded
+**Severity:** Minor
+**Affects:** Conversion Setup screen, GIF kind
+**Description:** The Start/End (seconds) fields for GIF trimming are free-form
+number inputs with no upper bound, because the video's actual duration isn't known
+client-side until FFprobe runs inside FfmpegDataSource at conversion time (not
+eagerly when the video is picked). A user entering an end time past the video's
+real length will pass an out-of-range `-t` to FFmpeg; untested what FFmpeg does
+in that case (likely just clips to actual end, but unverified).
+**Workaround:** None yet — acceptable for now since real-device testing is blocked
+anyway (see the Android SDK issue above).
+**Fix planned:** yes — probably by probing duration eagerly on video pick and
+passing it down to the Setup screen, once device testing is possible.
 
 ### 2026-08-12 — android/ and ios/ platform folders missing from the repo (RESOLVED)
 **Severity:** Major

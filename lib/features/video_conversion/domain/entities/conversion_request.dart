@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:video_converter_pro/features/compression/domain/entities/conversion_preset.dart';
+import 'package:video_converter_pro/features/gif_creation/domain/entities/gif_options.dart';
 import 'package:video_converter_pro/features/video_conversion/domain/entities/output_format.dart';
 import 'package:video_converter_pro/features/video_import/domain/entities/video_file.dart';
 
@@ -12,5 +13,6 @@ class ConversionRequest with _$ConversionRequest {
     required OutputFormat outputFormat,
     required String outputPath,
     ConversionPreset? preset,
+    GifOptions? gifOptions,
   }) = _ConversionRequest;
 }

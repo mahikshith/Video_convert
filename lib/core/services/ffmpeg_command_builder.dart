@@ -1,4 +1,6 @@
 import 'package:video_converter_pro/features/compression/domain/entities/encoding_settings.dart';
+import 'package:video_converter_pro/features/gif_creation/domain/entities/gif_options.dart';
+import 'package:video_converter_pro/features/video_conversion/domain/entities/output_format.dart';
 
 /// Builds argument lists for FFmpegKit's `executeWithArgumentsAsync`.
 ///
@@ -42,5 +44,67 @@ class FfmpegCommandBuilder {
 
     args.add(outputPath);
     return args;
+  }
+
+  List<String> buildAudioExtractCommand({
+    required String inputPath,
+    required String outputPath,
+    required OutputFormat format,
+  }) {
+    final args = <String>['-y', '-i', inputPath, '-vn'];
+
+    switch (format) {
+      case OutputFormat.mp3:
+        args.addAll(['-c:a', 'libmp3lame', '-b:a', '192k']);
+      case OutputFormat.aac:
+        args.addAll(['-c:a', 'aac', '-b:a', '192k']);
+      case OutputFormat.wav:
+        args.addAll(['-c:a', 'pcm_s16le']);
+      case OutputFormat.mp4:
+      case OutputFormat.mov:
+      case OutputFormat.mkv:
+      case OutputFormat.webm:
+      case OutputFormat.gif:
+        throw ArgumentError.value(format, 'format', 'Not an audio format');
+    }
+
+    args.add(outputPath);
+    return args;
+  }
+
+  List<String> buildGifCommand({
+    required String inputPath,
+    required String outputPath,
+    required GifOptions options,
+  }) {
+    final args = <String>['-y'];
+
+    if (options.start > Duration.zero) {
+      args.addAll(['-ss', _formatTimestamp(options.start)]);
+    }
+    args.addAll(['-i', inputPath]);
+
+    final clipDuration = options.end - options.start;
+    if (clipDuration > Duration.zero) {
+      args.addAll(['-t', _formatTimestamp(clipDuration)]);
+    }
+
+    args.addAll([
+      '-vf',
+      'fps=${options.fps},scale=480:-1:flags=lanczos',
+      '-loop',
+      '0',
+      outputPath,
+    ]);
+
+    return args;
+  }
+
+  String _formatTimestamp(Duration duration) {
+    final hours = duration.inHours.toString().padLeft(2, '0');
+    final minutes = (duration.inMinutes % 60).toString().padLeft(2, '0');
+    final seconds = (duration.inSeconds % 60).toString().padLeft(2, '0');
+    final millis = (duration.inMilliseconds % 1000).toString().padLeft(3, '0');
+    return '$hours:$minutes:$seconds.$millis';
   }
 }

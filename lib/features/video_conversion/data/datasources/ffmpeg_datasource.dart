@@ -10,7 +10,9 @@ import 'package:video_converter_pro/core/services/encoding_settings_resolver.dar
 import 'package:video_converter_pro/core/services/ffmpeg_command_builder.dart';
 import 'package:video_converter_pro/core/services/logger_service.dart';
 import 'package:video_converter_pro/features/compression/domain/entities/conversion_preset.dart';
+import 'package:video_converter_pro/features/gif_creation/domain/entities/gif_options.dart';
 import 'package:video_converter_pro/features/video_conversion/domain/entities/conversion_progress.dart';
+import 'package:video_converter_pro/features/video_conversion/domain/entities/output_format.dart';
 
 class FfmpegDataSource {
   FfmpegDataSource({
@@ -42,7 +44,9 @@ class FfmpegDataSource {
   Stream<ConversionProgress> convert({
     required String inputPath,
     required String outputPath,
+    required OutputFormat outputFormat,
     ConversionPreset? preset,
+    GifOptions? gifOptions,
   }) {
     final controller = StreamController<ConversionProgress>();
     final stopwatch = Stopwatch();
@@ -50,14 +54,38 @@ class FfmpegDataSource {
     Future<void> run() async {
       try {
         final totalDuration = await probeDuration(inputPath);
-        final settings = preset == null
-            ? null
-            : _settingsResolver.resolve(preset, inputDuration: totalDuration);
-        final args = _commandBuilder.buildConvertCommand(
-          inputPath: inputPath,
-          outputPath: outputPath,
-          settings: settings,
-        );
+
+        final List<String> args;
+        Duration progressDuration = totalDuration;
+        switch (outputFormat.kind) {
+          case OutputKind.video:
+            final settings = preset == null
+                ? null
+                : _settingsResolver.resolve(
+                    preset,
+                    inputDuration: totalDuration,
+                  );
+            args = _commandBuilder.buildConvertCommand(
+              inputPath: inputPath,
+              outputPath: outputPath,
+              settings: settings,
+            );
+          case OutputKind.audio:
+            args = _commandBuilder.buildAudioExtractCommand(
+              inputPath: inputPath,
+              outputPath: outputPath,
+              format: outputFormat,
+            );
+          case OutputKind.gif:
+            final options = gifOptions ??
+                GifOptions(start: Duration.zero, end: totalDuration, fps: 12);
+            args = _commandBuilder.buildGifCommand(
+              inputPath: inputPath,
+              outputPath: outputPath,
+              options: options,
+            );
+            progressDuration = options.end - options.start;
+        }
         stopwatch.start();
 
         _activeSession = await FFmpegKit.executeWithArgumentsAsync(
@@ -86,9 +114,10 @@ class FfmpegDataSource {
           },
           (log) => LoggerService.info(log.getMessage(), tag: 'FFmpeg'),
           (Statistics stats) {
-            if (totalDuration.inMilliseconds <= 0) return;
-            final percent = (stats.getTime() / totalDuration.inMilliseconds)
-                .clamp(0.0, 1.0);
+            if (progressDuration.inMilliseconds <= 0) return;
+            final percent =
+                (stats.getTime() / progressDuration.inMilliseconds)
+                    .clamp(0.0, 1.0);
             controller.add(
               ConversionProgress(percent: percent, elapsed: stopwatch.elapsed),
             );

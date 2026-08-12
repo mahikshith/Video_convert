@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:video_converter_pro/core/error/failure.dart';
 import 'package:video_converter_pro/features/compression/domain/entities/conversion_preset.dart';
+import 'package:video_converter_pro/features/gif_creation/domain/entities/gif_options.dart';
 import 'package:video_converter_pro/features/video_conversion/data/datasources/ffmpeg_datasource.dart';
 import 'package:video_converter_pro/features/video_conversion/data/repositories/video_conversion_repository_impl.dart';
 import 'package:video_converter_pro/features/video_conversion/domain/entities/conversion_request.dart';
@@ -49,7 +50,11 @@ class VideoConversionController extends _$VideoConversionController {
     }
   }
 
-  Future<void> startConversion(ConversionPreset preset) async {
+  Future<void> startConversion({
+    required OutputFormat outputFormat,
+    ConversionPreset? preset,
+    GifOptions? gifOptions,
+  }) async {
     final video = _selectedVideo;
     if (video == null) return;
 
@@ -57,13 +62,14 @@ class VideoConversionController extends _$VideoConversionController {
       final outputDir = await getTemporaryDirectory();
       final outputPath =
           '${outputDir.path}/converted_${DateTime.now().millisecondsSinceEpoch}.'
-          '${OutputFormat.mp4.extension}';
+          '${outputFormat.extension}';
 
       final request = ConversionRequest(
         input: video,
-        outputFormat: OutputFormat.mp4,
+        outputFormat: outputFormat,
         outputPath: outputPath,
         preset: preset,
+        gifOptions: gifOptions,
       );
 
       final stopwatch = Stopwatch()..start();
