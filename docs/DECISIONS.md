@@ -90,3 +90,42 @@ Options, with what each actually costs:
 Recommendation: option 1. It preserves both the licensing model and the core
 feature, and plausibly improves conversion latency. It is the only option that
 doesn't trade away something the PRD treats as essential.
+
+## 2026-08-13 — RESOLVED: switched to ffmpeg_kit_flutter_new_full (LGPL)
+Resolves the 2026-08-13 "OPEN" entry above, per user decision to implement option 1.
+
+Chosen: `ffmpeg_kit_flutter_new_full` (^2.5.0, resolved 2.5.2) — a sibling package
+from the same maintainer as `ffmpeg_kit_flutter_new`, but a distinct pub.dev
+package covering the LGPL "full" tier (no x264/x265/xvidcore/vid.stab). Its
+pubspec explicitly states "contains no GPL-licensed components." Also fixes an
+unrelated but critical problem found during the switch: the old package
+(`ffmpeg_kit_flutter_new` 1.6.1, via the `ffmpeg_kit_flutter_android` plugin)
+downloaded its Android `.aar` from a hardcoded GitHub Releases URL that returns
+404 — that release no longer exists on the maintainer's repo. Android builds
+were broken today regardless of licensing. The new package is a current (13
+days old at the time of this change), actively published major version line
+that doesn't have this problem.
+
+Rejected: patching/forking the old package's build scripts to point at a
+different release asset — unnecessary now that a proper non-GPL package exists
+upstream; forking would create an ongoing maintenance burden for no benefit.
+
+Consequence: MP4/MOV/MKV video encoding no longer uses software libx264 (not
+present in this build). It now uses the platform's hardware H.264 encoder —
+`h264_mediacodec` on Android, `h264_videotoolbox` on iOS/macOS — resolved at
+runtime in `FfmpegDataSource._resolveH264Encoder()`. WebM (VP9/libvpx),
+GIF, and audio extraction (MP3/AAC/WAV) are unaffected — none of them used a
+GPL library.
+
+Follow-on change: hardware encoders take a target bitrate, not libx264's CRF
+(quality-factor) mode, and reject the `-preset` flag outright. `CompressionPreset
+.original` ("Original Quality"), previously CRF-only with no bitrate, was given
+an explicit 8000kbps bitrate so it still works under hardware encoding.
+
+**Not yet verified on a real device** — no Android SDK/macOS on this dev
+machine. The specific risk: it's unconfirmed whether this LGPL build's Android
+AAR was actually compiled with MediaCodec hardware-encode support enabled. If
+it wasn't, MP4/MOV/MKV output has no fallback (there's no software encoder in
+this build to fall back to) and would fail outright on Android. This must be
+the first thing tested once device access exists. See
+context/KNOWN_ISSUES.md.

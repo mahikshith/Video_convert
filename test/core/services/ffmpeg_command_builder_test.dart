@@ -27,14 +27,25 @@ void main() {
       expect(args.first, '-y');
     });
 
-    test('buildConvertCommand uses H.264 video and AAC audio codecs', () {
+    test('buildConvertCommand defaults to the mediacodec hardware encoder '
+        'and AAC audio', () {
       final args = builder.buildConvertCommand(
         inputPath: '/tmp/input.mov',
         outputPath: '/tmp/output.mp4',
       );
 
-      expect(args, containsAllInOrder(['-c:v', 'libx264']));
+      expect(args, containsAllInOrder(['-c:v', 'h264_mediacodec']));
       expect(args, containsAllInOrder(['-c:a', 'aac']));
+    });
+
+    test('buildConvertCommand honours a custom h264Encoder', () {
+      final args = builder.buildConvertCommand(
+        inputPath: '/tmp/input.mov',
+        outputPath: '/tmp/output.mp4',
+        h264Encoder: 'h264_videotoolbox',
+      );
+
+      expect(args, containsAllInOrder(['-c:v', 'h264_videotoolbox']));
     });
 
     test('applies a scale filter when max dimensions are given', () {
@@ -68,7 +79,8 @@ void main() {
       expect(args, isNot(contains('-crf')));
     });
 
-    test('uses CRF when no fixed bitrate is given', () {
+    test('ignores CRF for hardware-encoded output — mediacodec/videotoolbox '
+        'only take a bitrate, and reject an unrecognized -crf flag', () {
       final args = builder.buildConvertCommand(
         inputPath: '/tmp/input.mov',
         outputPath: '/tmp/output.mp4',
@@ -78,17 +90,28 @@ void main() {
         ),
       );
 
-      expect(args, containsAllInOrder(['-crf', '24']));
+      expect(args, isNot(contains('-crf')));
       expect(args, isNot(contains('-b:v')));
     });
 
-    test('uses a mobile-appropriate x264 preset', () {
+    test('omits -b:v entirely for hardware-encoded output when no bitrate '
+        'was resolved, rather than passing an unrecognized flag', () {
       final args = builder.buildConvertCommand(
         inputPath: '/tmp/input.mov',
         outputPath: '/tmp/output.mp4',
       );
 
-      expect(args, containsAllInOrder(['-preset', 'veryfast']));
+      expect(args, isNot(contains('-b:v')));
+    });
+
+    test('does not pass -preset for hardware encoders — that is a libx264-'
+        'only option and would make FFmpeg reject the command', () {
+      final args = builder.buildConvertCommand(
+        inputPath: '/tmp/input.mov',
+        outputPath: '/tmp/output.mp4',
+      );
+
+      expect(args, isNot(contains('-preset')));
     });
 
     test('enables faststart for mp4 so shared clips stream', () {

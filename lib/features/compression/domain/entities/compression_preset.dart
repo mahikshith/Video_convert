@@ -31,7 +31,12 @@ enum CompressionPreset {
     description: 'Minimal compression',
     maxWidth: null,
     maxHeight: null,
-    videoBitrateKbps: null,
+    // Hardware H.264 encoders (this app has no software libx264 — see
+    // docs/DECISIONS.md) take a target bitrate, not a quality factor, so
+    // this can't be crf-only the way a software encoder preset could be.
+    // 8000kbps is a generous near-source-quality bitrate at typical phone
+    // video resolutions.
+    videoBitrateKbps: 8000,
     audioBitrateKbps: 192,
     crf: 18,
   );

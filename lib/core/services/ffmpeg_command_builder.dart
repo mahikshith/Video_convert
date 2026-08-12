@@ -14,6 +14,12 @@ class FfmpegCommandBuilder {
     required String outputPath,
     OutputFormat format = OutputFormat.mp4,
     EncodingSettings? settings,
+    // This LGPL build has no libx264 (see docs/DECISIONS.md — swapping the
+    // GPL FFmpeg build for a clean one meant giving up software H.264).
+    // Non-webm output is therefore encoded by the platform's hardware
+    // encoder; the caller (FfmpegDataSource) resolves which one is actually
+    // available on the running device.
+    String h264Encoder = 'h264_mediacodec',
   }) {
     final args = <String>['-y', '-i', inputPath];
 
@@ -33,6 +39,9 @@ class FfmpegCommandBuilder {
     // WebM only accepts VP8/VP9/AV1 video with Vorbis/Opus audio; muxing
     // H.264/AAC into it fails outright.
     final isWebm = format == OutputFormat.webm;
+    final videoBitrateKbps = settings?.videoBitrateKbps;
+    final crf = settings?.crf;
+
     if (isWebm) {
       args.addAll([
         '-c:v', 'libvpx-vp9',
@@ -44,24 +53,22 @@ class FfmpegCommandBuilder {
         '-deadline', 'good',
         '-cpu-used', '4',
       ]);
-    } else {
-      // 'medium' is a desktop default; on mobile it blows past the PRD's
-      // 30s average conversion target. 'veryfast' is several times quicker
-      // for a modest size increase at the same CRF.
-      args.addAll(['-c:v', 'libx264', '-preset', 'veryfast']);
-    }
-
-    final videoBitrateKbps = settings?.videoBitrateKbps;
-    final crf = settings?.crf;
-    if (videoBitrateKbps != null) {
-      args.addAll(['-b:v', '${videoBitrateKbps}k']);
-    } else if (crf != null) {
-      // libvpx-vp9 only honours -crf in constant-quality mode, which needs
-      // an explicit zero target bitrate.
-      if (isWebm) {
-        args.addAll(['-b:v', '0']);
+      if (videoBitrateKbps != null) {
+        args.addAll(['-b:v', '${videoBitrateKbps}k']);
+      } else if (crf != null) {
+        // libvpx-vp9 only honours -crf in constant-quality mode, which
+        // needs an explicit zero target bitrate.
+        args.addAll(['-b:v', '0', '-crf', '$crf']);
       }
-      args.addAll(['-crf', '$crf']);
+    } else {
+      // Hardware encoders take a target bitrate, not a -preset/-crf value —
+      // passing either makes FFmpeg reject the command outright. If no
+      // bitrate was resolved, omit both and let the encoder use its own
+      // default rather than emit a flag it doesn't understand.
+      args.addAll(['-c:v', h264Encoder]);
+      if (videoBitrateKbps != null) {
+        args.addAll(['-b:v', '${videoBitrateKbps}k']);
+      }
     }
 
     args.addAll(['-c:a', isWebm ? 'libopus' : 'aac']);

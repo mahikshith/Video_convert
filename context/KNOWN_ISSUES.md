@@ -1,41 +1,54 @@
 # Known Issues
 
-### 2026-08-13 — CRITICAL: ffmpeg_kit_flutter_new ships a FULL-GPL FFmpeg build
+### 2026-08-13 — ffmpeg_kit_flutter_new shipped a FULL-GPL FFmpeg build (RESOLVED)
 **Severity:** Critical
 **Affects:** Whole product — legal/licensing, ability to ship at all
 **Description:** The locked tech stack says "ffmpeg_kit_flutter_new (LGPL only,
-NEVER GPL)" (.github/copilot-instructions.md), and docs/DECISIONS.md records the
-2026-08-09 decision as "Chosen: ffmpeg_kit_flutter_new (LGPL) / Rejected: GPL
-builds / Reason: License compatibility with closed-source distribution". That
-assumption is **wrong**. The package resolves to GPL binaries on every platform:
+NEVER GPL)" (.github/copilot-instructions.md), but the package actually resolved
+to full-GPL FFmpeg binaries on every platform (podspec defaulted to
+`full-gpl-lts`, Android hardcoded a `full-gpl` .aar download, package README
+listed `x264`/`x265`/`xvidcore`/`vid.stab` as included). Our own encoder choice,
+`libx264`, was itself one of those GPL libraries. Distributing this inside a
+closed-source, paid app would have been a license violation.
 
-- `pubspec.yaml` description: "FFmpeg Kit for Flutter with **Full GPL** and
-  updated bindings"
-- iOS `ffmpeg_kit_flutter_new.podspec`: `s.default_subspec = 'full-gpl-lts'`
-  → depends on `ffmpeg-kit-ios-full-gpl`
-- Android `scripts/setup_android.sh`: hardcoded download of
-  `ffmpeg-kit-full-gpl-6.0.LTS.aar` (no variant override hook in build.gradle)
-- macOS `scripts/setup_macos.sh`: `ffmpeg-kit-macos-full-gpl-6.0.zip`
-- Package README: 4 GPL libraries included — `vid.stab`, `x264`, `x265`,
-  `xvidcore`
+**Fix (2026-08-13):** Switched to `ffmpeg_kit_flutter_new_full` (a distinct,
+genuinely-LGPL sibling package — "contains no GPL-licensed components"), per
+user decision (option 1 in docs/DECISIONS.md). This also incidentally fixed a
+second, unrelated problem discovered during the switch: the old package's
+Android `.aar` download URL was a 404 (dead GitHub release) — Android builds
+were broken today independent of licensing.
 
-The LGPL-3.0 LICENSE file at the package root covers the Dart wrapper only, not
-the linked binaries — which is what makes this easy to miss.
+Consequence: MP4/MOV/MKV now use hardware H.264 encoding (`h264_mediacodec` /
+`h264_videotoolbox`) instead of software `libx264`, since this LGPL build
+doesn't include it. See the entry below for what's unverified about that.
 
-Compounding it: our own `FfmpegCommandBuilder` encodes with **`libx264`**, one of
-those GPL libraries, for MP4/MOV/MKV — i.e. the core conversion path is the GPL
-path. Distributing this inside a closed-source, paid ("Proprietary. All rights
-reserved.", $4.99 unlock) app would require releasing the app's source under
-GPL, or it is a license violation. GPL-licensed binaries are also a known
-conflict with the App Store's terms.
+**Fix planned:** done, pending device verification (see below).
 
-**Workaround:** None. This is not fixable by a code tweak — it needs a package/
-variant decision from the user. Options sketched in docs/DECISIONS.md
-(2026-08-13 entry).
-**Fix planned:** BLOCKED on user decision. Must be resolved before any store
-submission. Flagged 2026-08-13; not fixed autonomously because every option
-trades away either a core feature (H.264/MP4 encoding) or the proprietary
-licensing model, which is a product/legal call, not an engineering one.
+### 2026-08-13 — Unverified: hardware H.264 encoding has no software fallback
+**Severity:** Critical (if it fails), currently unverified
+**Affects:** All MP4/MOV/MKV output (the app's primary conversion path)
+**Description:** After switching to the LGPL FFmpeg build (see entry above),
+MP4/MOV/MKV encoding uses `h264_mediacodec` (Android) or `h264_videotoolbox`
+(iOS/macOS) instead of software `libx264` — because libx264 isn't present in
+this build at all. This should work: MediaCodec/VideoToolbox are OS-level APIs
+FFmpeg wraps, not external libraries, so they're normally available regardless
+of which optional codec libraries a build includes. But the specific claim —
+that *this* package's *this* Android `.aar` was actually compiled with
+MediaCodec hardware-encode support turned on — is unconfirmed. The package's
+own docs only vaguely say "MediaCodec system library is supported," without
+naming the encoder or confirming it's enabled.
+
+If it isn't enabled, MP4/MOV/MKV conversion fails outright on Android with no
+fallback path, since there's no software encoder left in this build to fall
+back to. The PRD itself flags Android device fragmentation as a risk (Risk 4),
+so even if MediaCodec works on some devices, it may not work uniformly across
+the low-end/older devices this app is likely to see in practice.
+**Workaround:** None available without device testing.
+**Fix planned:** This is the **first thing to test** once Android SDK/device
+access exists — before trusting any other unverified behavior in this app.
+If MediaCodec hardware encoding turns out not to work, the fallback options are
+the same three from the original GPL decision (docs/DECISIONS.md 2026-08-13):
+re-accept GPL, or drop MP4/MOV/MKV output in favor of WebM-only.
 
 ### 2026-08-12 — No Android SDK / no macOS on dev machine
 **Severity:** Major

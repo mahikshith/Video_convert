@@ -1,12 +1,13 @@
 # Next Steps
 
-1. Commit and push Sprint 8 drafts (Privacy Policy, Terms, Store Listing)
-2. When ready: provide business details (name, contact email,
-   jurisdiction) to finalize the legal docs, and get them reviewed by
-   someone qualified before publishing
-3. Sprint 6 (Paywall) resumes once RevenueCat account + API keys +
-   configured store products are available
-4. Install Android SDK when ready, then do a real device/emulator smoke
-   test of everything built so far, and take store screenshots once the
-   app is actually running
-5. App icon still needs real design work
+1. Commit and push this session's fixes (code review + GPL→LGPL package switch)
+2. When Android SDK/device access exists: **test hardware H.264 encoding
+   FIRST** (MP4/MOV/MKV conversion) — there's no software fallback anymore,
+   so this is the single highest-risk unverified thing in the app
+3. Then smoke-test everything else: all compression/destination presets,
+   GIF (loop, fps, trim, palette quality), audio (MP3/AAC/WAV), Cancel,
+   Save, Share, Hive persistence across restarts, splash/onboarding timing
+4. Sprint 6 (Paywall) resumes once RevenueCat account + API keys + store
+   product configuration are available
+5. Sprint 8 remainder (app icon, screenshots, legal review, business
+   details) needs the user

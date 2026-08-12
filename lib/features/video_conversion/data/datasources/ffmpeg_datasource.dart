@@ -1,10 +1,11 @@
 import 'dart:async';
+import 'dart:io';
 
-import 'package:ffmpeg_kit_flutter_new/ffmpeg_kit.dart';
-import 'package:ffmpeg_kit_flutter_new/ffmpeg_session.dart';
-import 'package:ffmpeg_kit_flutter_new/ffprobe_kit.dart';
-import 'package:ffmpeg_kit_flutter_new/return_code.dart';
-import 'package:ffmpeg_kit_flutter_new/statistics.dart';
+import 'package:ffmpeg_kit_flutter_new_full/ffmpeg_kit.dart';
+import 'package:ffmpeg_kit_flutter_new_full/ffmpeg_session.dart';
+import 'package:ffmpeg_kit_flutter_new_full/ffprobe_kit.dart';
+import 'package:ffmpeg_kit_flutter_new_full/return_code.dart';
+import 'package:ffmpeg_kit_flutter_new_full/statistics.dart';
 import 'package:video_converter_pro/core/error/failure.dart';
 import 'package:video_converter_pro/core/services/encoding_settings_resolver.dart';
 import 'package:video_converter_pro/core/services/ffmpeg_command_builder.dart';
@@ -86,6 +87,7 @@ class FfmpegDataSource {
               outputPath: outputPath,
               format: outputFormat,
               settings: settings,
+              h264Encoder: _resolveH264Encoder(),
             );
           case OutputKind.audio:
             args = _commandBuilder.buildAudioExtractCommand(
@@ -174,5 +176,14 @@ class FfmpegDataSource {
 
     unawaited(run());
     return controller.stream;
+  }
+
+  /// This LGPL build has no software H.264 encoder (see docs/DECISIONS.md),
+  /// so MP4/MOV/MKV output goes through the platform's hardware encoder.
+  /// iOS and macOS use VideoToolbox; everything else (in practice, only
+  /// Android — this app doesn't ship to desktop/web) uses MediaCodec.
+  String _resolveH264Encoder() {
+    if (Platform.isIOS || Platform.isMacOS) return 'h264_videotoolbox';
+    return 'h264_mediacodec';
   }
 }
