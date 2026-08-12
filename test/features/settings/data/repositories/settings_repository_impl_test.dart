@@ -88,5 +88,23 @@ void main() {
       verify(() => dataSource.setDefaultPresetKey('destination:youtube'))
           .called(1);
     });
+
+    test('hasSeenOnboarding forwards the stored flag', () async {
+      when(() => dataSource.getHasSeenOnboarding())
+          .thenAnswer((_) async => true);
+
+      final result = await repository.hasSeenOnboarding();
+
+      expect(result, isTrue);
+    });
+
+    test('markOnboardingSeen persists true', () async {
+      when(() => dataSource.setHasSeenOnboarding(any()))
+          .thenAnswer((_) async {});
+
+      await repository.markOnboardingSeen();
+
+      verify(() => dataSource.setHasSeenOnboarding(true)).called(1);
+    });
   });
 }

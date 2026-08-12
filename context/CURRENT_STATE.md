@@ -1,54 +1,54 @@
 # Current State
 
-**Sprint:** 05 — History & Settings (implemented, real-device smoke test still pending)
+**Sprint:** 07 — Onboarding (implemented, real-device smoke test still pending). Sprint 6 (Paywall) skipped for now — needs real RevenueCat credentials.
 **Branch:** work
-**Last Commit:** 2a50ee3 (Sprint 4 GIF & audio) — Sprint 5 work not yet committed
+**Last Commit:** f8fab97 (Sprint 5 history & settings) — Sprint 7 work not yet committed
 
 ## Completed
-### Sprints 1-4
+### Sprints 1-5
 - Flutter scaffold, FFmpeg conversion engine (video/GIF/audio), compression
-  and destination presets, Conversion Setup → Progress → Results flow with
-  Cancel/Save/Share. See prior sprint files under tasks/ for detail.
-- Platform folders regenerated after a Windows reset wiped the previous
-  Flutter install (see Sprint 2 notes / KNOWN_ISSUES.md).
+  and destination presets, Conversion Setup → Progress → Results flow,
+  conversion history (Hive) and settings (shared_preferences). See
+  tasks/SPRINT_0[1-5]*.md for detail.
 
-### Sprint 5
-- `Hive.initFlutter()` wired into `main.dart` (Hive was a dependency since
-  Sprint 1 but never actually initialized).
-- `history` feature: `ConversionHistoryEntry` (freezed + json_serializable),
-  Hive-backed repository (stores entries as plain Maps — no
-  hive_generator/TypeAdapter needed), `HistoryController`.
-- Conversions now auto-save to history on completion (failure to save
-  doesn't fail the conversion itself).
-- `HistoryPage`: list, per-item share/delete, clear-all with confirmation.
-- `settings` feature: `SettingsRepository` over `shared_preferences`
-  (already a locked-stack dependency), encodes the default `ConversionPreset`
-  as a string key. `SettingsPage`: default-preset picker, clear history.
-- `go_router`: `/history`, `/settings` (pushed, not replaced, so back
-  returns to Home). `ConversionSetupPage` now pre-fills from the default
-  preset setting until the user manually changes it.
-- `flutter analyze`: zero issues. `flutter test`: 30/30 passing.
+### Sprint 6 — SKIPPED (user decision, 2026-08-13)
+- Needs a real RevenueCat account, API keys, and configured App Store/Play
+  Store products. Not scaffolded with placeholders — user explicitly chose
+  to skip to a later sprint rather than have this half-built with fake
+  config.
+
+### Sprint 7
+- `settings` feature gained a `hasSeenOnboarding` flag
+  (shared_preferences).
+- New `onboarding` feature: `SplashPage` (branded icon, ~1.2s minimum
+  display run in parallel with the onboarding-flag lookup) and
+  `OnboardingPage` (headline, PRD positioning tagline, three guardrail-
+  derived bullets, single "Get Started" button — no carousel).
+- `go_router` `initialLocation` changed to `/splash`; routes to
+  `/onboarding` on first launch, straight to `/` (Home) afterward.
+- `flutter analyze`: zero issues. `flutter test`: 32/32 passing.
 
 ## In Progress
-- Sprint 5 commit — pending
+- Sprint 7 commit — pending
 - Real device/emulator smoke test — blocked, see Blockers (now also
-  covering Hive persistence across restarts and history file availability)
+  covering whether splash→home cold-start timing actually stays under 2s)
 
 ## Not Started
-- Sprint 6+ (paywall/RevenueCat, onboarding, store prep)
+- Sprint 6 (Paywall/RevenueCat) — blocked on user providing credentials
+- Sprint 8 (Store Prep) — likely has a similar external-dependency shape
+  (store accounts, icons, screenshots); check before assuming it's
+  code-only
 
 ## Blockers
 - No Android SDK installed on this machine — deferred by user decision on
   2026-08-12.
 - No macOS/Xcode available for iOS build/run.
-- Everything FFmpeg-related (all conversion kinds, presets, cancel) plus
-  now Hive persistence is implemented and unit-tested at the Dart level
-  only — never run against a real device. Treat as unverified until a
-  device/emulator smoke test happens.
-- Upcoming Sprint 6 (Paywall/RevenueCat) and Sprint 7 (onboarding, if it
-  touches Firebase Analytics) will need real RevenueCat/Firebase project
-  credentials that only the user can provide — flagging now so it's not a
-  surprise blocker later.
+- Everything built so far (FFmpeg engine, presets, history, onboarding
+  flow) is implemented and unit-tested at the Dart level only — never run
+  on a real device. Treat as unverified until a device/emulator smoke test
+  happens.
+- Sprint 6 needs RevenueCat account + API keys + App Store/Play Store
+  product configuration from the user before meaningful implementation.
 
 ## Notes
 - Standard env setup:
@@ -57,7 +57,9 @@
   ```
 - User has waived the per-sprint plan-approval gate for the remainder of
   this engagement — continuing to log package/architecture decisions in
-  docs/DECISIONS.md but not pausing for approval before each sprint.
-- No new packages added in Sprint 5 (Hive and shared_preferences were
-  already locked-stack, just not yet wired up).
+  docs/DECISIONS.md but not pausing for approval before each sprint. Still
+  escalating on genuine external blockers (like Sprint 6) rather than
+  guessing.
+- No new packages added in Sprint 7 (shared_preferences was already
+  locked-stack).
 - Git remote uses token auth: origin is configured with PAT.

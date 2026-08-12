@@ -41,4 +41,11 @@ class SettingsRepositoryImpl implements SettingsRepository {
     };
     return _dataSource.setDefaultPresetKey(key);
   }
+
+  @override
+  Future<bool> hasSeenOnboarding() => _dataSource.getHasSeenOnboarding();
+
+  @override
+  Future<void> markOnboardingSeen() =>
+      _dataSource.setHasSeenOnboarding(true);
 }

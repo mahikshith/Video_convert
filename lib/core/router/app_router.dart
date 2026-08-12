@@ -1,14 +1,24 @@
 import 'package:go_router/go_router.dart';
 import 'package:video_converter_pro/features/history/presentation/pages/history_page.dart';
 import 'package:video_converter_pro/features/home/presentation/pages/home_page.dart';
+import 'package:video_converter_pro/features/onboarding/presentation/pages/onboarding_page.dart';
+import 'package:video_converter_pro/features/onboarding/presentation/pages/splash_page.dart';
 import 'package:video_converter_pro/features/settings/presentation/pages/settings_page.dart';
 import 'package:video_converter_pro/features/video_conversion/presentation/pages/conversion_setup_page.dart';
 import 'package:video_converter_pro/features/video_conversion/presentation/pages/progress_page.dart';
 import 'package:video_converter_pro/features/video_conversion/presentation/pages/results_page.dart';
 
 final appRouter = GoRouter(
-  initialLocation: '/',
+  initialLocation: '/splash',
   routes: [
+    GoRoute(
+      path: '/splash',
+      builder: (context, state) => const SplashPage(),
+    ),
+    GoRoute(
+      path: '/onboarding',
+      builder: (context, state) => const OnboardingPage(),
+    ),
     GoRoute(
       path: '/',
       builder: (context, state) => const HomePage(),
