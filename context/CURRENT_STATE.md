@@ -1,8 +1,8 @@
 # Current State
 
-**Sprint:** 02 — FFmpeg Engine (implemented, real-device smoke test pending)
+**Sprint:** 02 — FFmpeg Engine (implemented, real-device smoke test still pending)
 **Branch:** work
-**Last Commit:** 91c08a7 (Sprint 1 analyzer fixes) — this session's Sprint 2 work not yet committed
+**Last Commit:** 7ad24b0 (Sprint 2 FFmpeg engine) — platform folder regen not yet committed
 
 ## Completed
 ### Sprint 1
@@ -26,9 +26,15 @@
   progress → show before/after size
 - Unit tests: command builder + both repositories (mocktail) — 6/6 passing
 - `flutter analyze`: zero issues. `flutter test`: all passing.
+- `android/`, `ios/`, `web/`, `linux/`, `macos/`, `windows/` platform folders
+  regenerated via `flutter create .` (they were missing entirely — see
+  Blockers history below). Removed the default counter-app `test/widget_test.dart`
+  the regen dropped in (referenced a `MyApp` class that doesn't exist in this
+  project). `.metadata` added to git (standard Flutter tracking file, not
+  gitignored). analyze/test re-verified clean afterward.
 
 ## In Progress
-- Sprint 2 commit — pending
+- Committing the platform-folder regeneration
 - Real device/emulator smoke test of the FFmpeg conversion path — blocked,
   see Blockers
 
@@ -38,11 +44,9 @@
 
 ## Blockers
 - No Android SDK installed on this machine — deferred by user decision on
-  2026-08-12.
+  2026-08-12. `android/` platform folder now exists again, but there's still
+  no SDK to build against.
 - No macOS/Xcode available for iOS build/run.
-- `android/` and `ios/` platform folders don't currently exist in the repo at
-  all (git-ignored as "platform generated"; wiped by the Windows reset, never
-  tracked by git). Need `flutter create .` before any real build/run.
 - Because of the above, the FFmpeg execution path (native binary invocation,
   statistics-callback progress parsing, FFprobeKit duration lookup) is
   implemented and unit-tested at the Dart level only — never run against a
@@ -56,7 +60,7 @@
   ```
   No mirror env vars needed — direct pub.dev/storage.googleapis.com access
   confirmed working.
-- New packages added this session (see docs/DECISIONS.md for full reasoning):
+- New packages added in Sprint 2 (see docs/DECISIONS.md for full reasoning):
   `file_picker` (video import), `path_provider` (output file location,
   promoted from transitive to direct dependency), `mocktail` (test doubles).
   `freezed_annotation`/`json_annotation` moved from dev_dependencies to
