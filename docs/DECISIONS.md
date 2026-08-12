@@ -9,6 +9,8 @@ Reason: Utility category has strong subscription resistance
 Chosen: ffmpeg_kit_flutter_new (LGPL)
 Rejected: GPL builds
 Reason: License compatibility with closed-source distribution
+**SUPERSEDED / FACTUALLY WRONG — see the 2026-08-13 entry below. The premise
+that this package is LGPL does not hold.**
 
 ## 2026-08-09 — State management
 Chosen: Riverpod with code generation
@@ -49,3 +51,42 @@ Chosen: mocktail (already specified in testing.instructions.md, formalizing here
 Reason: Null-safe mocking without code generation, needed to test the
   video_conversion repository against a fake FFmpeg datasource without invoking
   real FFmpeg binaries in unit tests.
+
+## 2026-08-13 — OPEN: ffmpeg_kit_flutter_new is a full-GPL build (blocks release)
+Status: **UNRESOLVED — needs a user decision.** Recorded here rather than
+decided autonomously, because every option costs either a core feature or the
+proprietary licensing model.
+
+Finding: the 2026-08-09 "LGPL" premise is wrong. `ffmpeg_kit_flutter_new`
+resolves to full-GPL FFmpeg binaries on all three platforms (iOS podspec
+`default_subspec = 'full-gpl-lts'`; Android hardcodes
+`ffmpeg-kit-full-gpl-6.0.LTS.aar`; macOS likewise), and its own pubspec
+describes itself as "FFmpeg Kit for Flutter with Full GPL". The LGPL-3.0
+LICENSE at the package root covers only the Dart wrapper. Our own encoder
+choice, `libx264`, is itself one of the package's four GPL libraries.
+Full detail in context/KNOWN_ISSUES.md.
+
+Options, with what each actually costs:
+
+1. **Switch to a genuinely LGPL FFmpeg build and drop libx264.** Keeps the
+   app proprietary. H.264 software encoding goes away; MP4 output would have
+   to come from the platform hardware encoders (`h264_videotoolbox` on iOS,
+   `h264_mediacodec` on Android), which are OS-provided and not GPL. Upside:
+   hardware encoding is typically *much* faster than libx264 on mobile, so
+   this likely helps the PRD's <30s target rather than hurting it. Downside:
+   hardware encoder availability/quality varies by device (the PRD already
+   flags Android fragmentation as Risk 4), and it needs real device testing
+   to trust. Requires finding (or maintaining) an LGPL-variant package — the
+   upstream arthenica ffmpeg-kit project was retired in 2025, so the fork
+   landscape needs checking.
+2. **Keep the GPL build and open-source the app under GPL.** Contradicts
+   "Proprietary. All rights reserved." and complicates the paid model; GPL
+   binaries are also a well-known conflict with App Store terms.
+3. **Drop to VP9/WebM-only output** (libvpx is LGPL). Legally clean and
+   already implemented, but WebM is poorly supported by the exact share
+   targets the PRD is built around (WhatsApp, Instagram, TikTok), so this
+   guts the product's reason to exist.
+
+Recommendation: option 1. It preserves both the licensing model and the core
+feature, and plausibly improves conversion latency. It is the only option that
+doesn't trade away something the PRD treats as essential.

@@ -34,9 +34,21 @@ class FfmpegCommandBuilder {
     // H.264/AAC into it fails outright.
     final isWebm = format == OutputFormat.webm;
     if (isWebm) {
-      args.addAll(['-c:v', 'libvpx-vp9']);
+      args.addAll([
+        '-c:v', 'libvpx-vp9',
+        // libvpx-vp9 defaults are tuned for offline desktop encoding and are
+        // an order of magnitude too slow on a phone. row-mt spreads a frame
+        // across cores, and deadline/cpu-used trade a little compression
+        // efficiency for the speed this has to have on mobile.
+        '-row-mt', '1',
+        '-deadline', 'good',
+        '-cpu-used', '4',
+      ]);
     } else {
-      args.addAll(['-c:v', 'libx264', '-preset', 'medium']);
+      // 'medium' is a desktop default; on mobile it blows past the PRD's
+      // 30s average conversion target. 'veryfast' is several times quicker
+      // for a modest size increase at the same CRF.
+      args.addAll(['-c:v', 'libx264', '-preset', 'veryfast']);
     }
 
     final videoBitrateKbps = settings?.videoBitrateKbps;
@@ -58,6 +70,13 @@ class FfmpegCommandBuilder {
       args.addAll(['-b:a', '${audioBitrateKbps}k']);
     }
 
+    // Move the moov atom to the front so a shared clip starts playing before
+    // it has fully downloaded. MP4/MOV only — the other containers don't
+    // have this problem.
+    if (format == OutputFormat.mp4 || format == OutputFormat.mov) {
+      args.addAll(['-movflags', '+faststart']);
+    }
+
     args.add(outputPath);
     return args;
   }
@@ -67,7 +86,10 @@ class FfmpegCommandBuilder {
     required String outputPath,
     required OutputFormat format,
   }) {
-    final args = <String>['-y', '-i', inputPath, '-vn'];
+    // -map 0:a:0 pins the first audio stream: a file with several audio
+    // tracks would otherwise let FFmpeg's default stream selection pick one
+    // we didn't intend.
+    final args = <String>['-y', '-i', inputPath, '-vn', '-map', '0:a:0'];
 
     switch (format) {
       case OutputFormat.mp3:
@@ -105,9 +127,15 @@ class FfmpegCommandBuilder {
       args.addAll(['-t', _formatTimestamp(clipDuration)]);
     }
 
+    // Without a generated palette, FFmpeg falls back to a generic 256-colour
+    // table: visibly banded output that is also usually *larger* than a
+    // palettised GIF. split/palettegen/paletteuse does both passes in one
+    // command. min(480,iw) avoids pointlessly upscaling an already-small clip.
     args.addAll([
-      '-vf',
-      'fps=${options.fps},scale=480:-1:flags=lanczos',
+      '-filter_complex',
+      "fps=${options.fps},scale='min(480,iw)':-1:flags=lanczos,"
+          'split[s0][s1];[s0]palettegen=stats_mode=diff[p];'
+          '[s1][p]paletteuse=dither=bayer:bayer_scale=5',
       '-loop',
       '0',
       outputPath,

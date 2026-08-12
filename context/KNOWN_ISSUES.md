@@ -1,5 +1,42 @@
 # Known Issues
 
+### 2026-08-13 — CRITICAL: ffmpeg_kit_flutter_new ships a FULL-GPL FFmpeg build
+**Severity:** Critical
+**Affects:** Whole product — legal/licensing, ability to ship at all
+**Description:** The locked tech stack says "ffmpeg_kit_flutter_new (LGPL only,
+NEVER GPL)" (.github/copilot-instructions.md), and docs/DECISIONS.md records the
+2026-08-09 decision as "Chosen: ffmpeg_kit_flutter_new (LGPL) / Rejected: GPL
+builds / Reason: License compatibility with closed-source distribution". That
+assumption is **wrong**. The package resolves to GPL binaries on every platform:
+
+- `pubspec.yaml` description: "FFmpeg Kit for Flutter with **Full GPL** and
+  updated bindings"
+- iOS `ffmpeg_kit_flutter_new.podspec`: `s.default_subspec = 'full-gpl-lts'`
+  → depends on `ffmpeg-kit-ios-full-gpl`
+- Android `scripts/setup_android.sh`: hardcoded download of
+  `ffmpeg-kit-full-gpl-6.0.LTS.aar` (no variant override hook in build.gradle)
+- macOS `scripts/setup_macos.sh`: `ffmpeg-kit-macos-full-gpl-6.0.zip`
+- Package README: 4 GPL libraries included — `vid.stab`, `x264`, `x265`,
+  `xvidcore`
+
+The LGPL-3.0 LICENSE file at the package root covers the Dart wrapper only, not
+the linked binaries — which is what makes this easy to miss.
+
+Compounding it: our own `FfmpegCommandBuilder` encodes with **`libx264`**, one of
+those GPL libraries, for MP4/MOV/MKV — i.e. the core conversion path is the GPL
+path. Distributing this inside a closed-source, paid ("Proprietary. All rights
+reserved.", $4.99 unlock) app would require releasing the app's source under
+GPL, or it is a license violation. GPL-licensed binaries are also a known
+conflict with the App Store's terms.
+
+**Workaround:** None. This is not fixable by a code tweak — it needs a package/
+variant decision from the user. Options sketched in docs/DECISIONS.md
+(2026-08-13 entry).
+**Fix planned:** BLOCKED on user decision. Must be resolved before any store
+submission. Flagged 2026-08-13; not fixed autonomously because every option
+trades away either a core feature (H.264/MP4 encoding) or the proprietary
+licensing model, which is a product/legal call, not an engineering one.
+
 ### 2026-08-12 — No Android SDK / no macOS on dev machine
 **Severity:** Major
 **Affects:** Sprint 1 Definition of Done (platform build verification)
