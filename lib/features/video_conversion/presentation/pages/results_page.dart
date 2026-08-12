@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:video_converter_pro/core/services/logger_service.dart';
 import 'package:video_converter_pro/features/video_conversion/presentation/providers/conversion_ui_state.dart';
 import 'package:video_converter_pro/features/video_conversion/presentation/providers/video_conversion_provider.dart';
 
@@ -77,17 +78,29 @@ class ResultsPage extends ConsumerWidget {
   }
 
   Future<void> _save(BuildContext context, String outputPath) async {
-    final docsDir = await getApplicationDocumentsDirectory();
-    final convertedDir = Directory('${docsDir.path}/converted');
-    if (!convertedDir.existsSync()) {
-      convertedDir.createSync(recursive: true);
-    }
-    final fileName = outputPath.split(Platform.pathSeparator).last;
-    final savedPath = '${convertedDir.path}/$fileName';
-    await File(outputPath).copy(savedPath);
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final docsDir = await getApplicationDocumentsDirectory();
+      final convertedDir = Directory('${docsDir.path}/converted');
+      if (!convertedDir.existsSync()) {
+        convertedDir.createSync(recursive: true);
+      }
+      // Output paths are always joined with '/', so match either separator
+      // rather than only the host platform's.
+      final fileName = outputPath.split(RegExp(r'[/\\]')).last;
+      final savedPath = '${convertedDir.path}/$fileName';
+      await File(outputPath).copy(savedPath);
+      messenger.showSnackBar(
         SnackBar(content: Text('Saved to $savedPath')),
+      );
+    } catch (e, stackTrace) {
+      LoggerService.error(
+        'Failed to save converted file',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Could not save that file.')),
       );
     }
   }

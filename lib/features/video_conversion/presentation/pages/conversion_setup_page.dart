@@ -22,9 +22,9 @@ class _ConversionSetupPageState extends ConsumerState<ConversionSetupPage> {
   OutputKind _kind = OutputKind.video;
 
   OutputFormat _videoFormat = OutputFormat.mp4;
-  ConversionPreset _preset =
-      const ConversionPreset.compression(CompressionPreset.medium);
-  bool _presetTouchedByUser = false;
+
+  /// Set once the user picks a preset; until then the saved default wins.
+  ConversionPreset? _presetOverride;
 
   OutputFormat _audioFormat = OutputFormat.mp3;
 
@@ -44,20 +44,31 @@ class _ConversionSetupPageState extends ConsumerState<ConversionSetupPage> {
     OutputFormat.wav,
   ];
   static const _fpsOptions = [8, 12, 15, 24];
+  static const _fallbackPreset =
+      ConversionPreset.compression(CompressionPreset.medium);
+
+  /// The user's explicit choice, else the saved default, else the fallback.
+  ConversionPreset get _effectivePreset =>
+      _presetOverride ??
+      ref.read(defaultPresetControllerProvider).valueOrNull ??
+      _fallbackPreset;
 
   @override
   Widget build(BuildContext context) {
     ref.listen(videoConversionControllerProvider, (previous, next) {
-      if (next.valueOrNull is ConversionInProgress) {
+      // Every progress tick produces a new ConversionInProgress; only the
+      // first one should navigate.
+      if (previous?.valueOrNull is! ConversionInProgress &&
+          next.valueOrNull is ConversionInProgress) {
         context.go('/progress');
       }
     });
 
-    if (!_presetTouchedByUser) {
-      ref.watch(defaultPresetControllerProvider).whenData((preset) {
-        _preset = preset;
-      });
-    }
+    // Watched (not just read) so the chips repaint when the saved default
+    // finishes loading.
+    final defaultPreset =
+        ref.watch(defaultPresetControllerProvider).valueOrNull;
+    final selectedPreset = _presetOverride ?? defaultPreset ?? _fallbackPreset;
 
     final uiState = ref.watch(videoConversionControllerProvider).valueOrNull;
     final video =
@@ -97,11 +108,9 @@ class _ConversionSetupPageState extends ConsumerState<ConversionSetupPage> {
                 formats: _videoFormats,
                 onFormatChanged: (format) =>
                     setState(() => _videoFormat = format),
-                preset: _preset,
-                onPresetChanged: (preset) => setState(() {
-                  _preset = preset;
-                  _presetTouchedByUser = true;
-                }),
+                preset: selectedPreset,
+                onPresetChanged: (preset) =>
+                    setState(() => _presetOverride = preset),
               ),
             OutputKind.gif => _GifOptionsForm(
                 startSeconds: _gifStartSeconds,
@@ -136,9 +145,19 @@ class _ConversionSetupPageState extends ConsumerState<ConversionSetupPage> {
       case OutputKind.video:
         controller.startConversion(
           outputFormat: _videoFormat,
-          preset: _preset,
+          preset: _effectivePreset,
         );
       case OutputKind.gif:
+        if (_gifStartSeconds < 0 || _gifEndSeconds <= _gifStartSeconds) {
+          // Without this, FFmpeg gets no -t and encodes from the start point
+          // all the way to the end of the video as a GIF.
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('GIF end time must be after the start time.'),
+            ),
+          );
+          return;
+        }
         controller.startConversion(
           outputFormat: OutputFormat.gif,
           gifOptions: GifOptions(

@@ -12,6 +12,7 @@ class FfmpegCommandBuilder {
   List<String> buildConvertCommand({
     required String inputPath,
     required String outputPath,
+    OutputFormat format = OutputFormat.mp4,
     EncodingSettings? settings,
   }) {
     final args = <String>['-y', '-i', inputPath];
@@ -19,24 +20,39 @@ class FfmpegCommandBuilder {
     final maxWidth = settings?.maxWidth;
     final maxHeight = settings?.maxHeight;
     if (maxWidth != null && maxHeight != null) {
+      // force_divisible_by=2 keeps both scaled dimensions even; H.264 and
+      // VP9 with yuv420p reject an odd width or height, which
+      // force_original_aspect_ratio=decrease can otherwise produce.
       args.addAll([
         '-vf',
         "scale='min($maxWidth,iw)':'min($maxHeight,ih)':"
-            'force_original_aspect_ratio=decrease',
+            'force_original_aspect_ratio=decrease:force_divisible_by=2',
       ]);
     }
 
-    args.addAll(['-c:v', 'libx264', '-preset', 'medium']);
+    // WebM only accepts VP8/VP9/AV1 video with Vorbis/Opus audio; muxing
+    // H.264/AAC into it fails outright.
+    final isWebm = format == OutputFormat.webm;
+    if (isWebm) {
+      args.addAll(['-c:v', 'libvpx-vp9']);
+    } else {
+      args.addAll(['-c:v', 'libx264', '-preset', 'medium']);
+    }
 
     final videoBitrateKbps = settings?.videoBitrateKbps;
     final crf = settings?.crf;
     if (videoBitrateKbps != null) {
       args.addAll(['-b:v', '${videoBitrateKbps}k']);
     } else if (crf != null) {
+      // libvpx-vp9 only honours -crf in constant-quality mode, which needs
+      // an explicit zero target bitrate.
+      if (isWebm) {
+        args.addAll(['-b:v', '0']);
+      }
       args.addAll(['-crf', '$crf']);
     }
 
-    args.addAll(['-c:a', 'aac']);
+    args.addAll(['-c:a', isWebm ? 'libopus' : 'aac']);
     final audioBitrateKbps = settings?.audioBitrateKbps;
     if (audioBitrateKbps != null) {
       args.addAll(['-b:a', '${audioBitrateKbps}k']);

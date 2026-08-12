@@ -5,18 +5,34 @@ import 'package:video_converter_pro/core/error/failure.dart';
 import 'package:video_converter_pro/features/video_conversion/presentation/providers/conversion_ui_state.dart';
 import 'package:video_converter_pro/features/video_conversion/presentation/providers/video_conversion_provider.dart';
 
-class ProgressPage extends ConsumerWidget {
+class ProgressPage extends ConsumerStatefulWidget {
   const ProgressPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    ref.listen(videoConversionControllerProvider, (previous, next) {
-      if (next.valueOrNull is ConversionCompleted) {
-        context.go('/results');
-      }
-    });
+  ConsumerState<ProgressPage> createState() => _ProgressPageState();
+}
 
+class _ProgressPageState extends ConsumerState<ProgressPage> {
+  bool _navigatedToResults = false;
+
+  /// Short conversions can finish before this page is even mounted, so the
+  /// completed state is checked on every build rather than only listened for
+  /// — a listener registered after the transition would never fire and the
+  /// page would sit on a spinner forever.
+  void _goToResults() {
+    if (_navigatedToResults) return;
+    _navigatedToResults = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) context.go('/results');
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final uiState = ref.watch(videoConversionControllerProvider);
+    if (uiState.valueOrNull is ConversionCompleted) {
+      _goToResults();
+    }
 
     return Scaffold(
       appBar: AppBar(title: const Text('Converting')),

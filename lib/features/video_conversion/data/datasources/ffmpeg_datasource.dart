@@ -24,6 +24,7 @@ class FfmpegDataSource {
   final FfmpegCommandBuilder _commandBuilder;
   final EncodingSettingsResolver _settingsResolver;
   FFmpegSession? _activeSession;
+  bool _cancelRequested = false;
 
   Future<Duration> probeDuration(String inputPath) async {
     final session = await FFprobeKit.getMediaInformation(inputPath);
@@ -35,7 +36,11 @@ class FfmpegDataSource {
     return Duration(milliseconds: (durationSeconds * 1000).round());
   }
 
+  /// Cancels the in-flight conversion. Safe to call before the FFmpeg session
+  /// exists (i.e. while the input is still being probed): the flag makes the
+  /// pending [convert] abort instead of starting an unstoppable session.
   Future<void> cancel() async {
+    _cancelRequested = true;
     final session = _activeSession;
     if (session == null) return;
     await FFmpegKit.cancel(session.getSessionId());
@@ -50,6 +55,17 @@ class FfmpegDataSource {
   }) {
     final controller = StreamController<ConversionProgress>();
     final stopwatch = Stopwatch();
+    _cancelRequested = false;
+
+    // If the listener walks away (navigation, provider disposal, a stream
+    // error) the FFmpeg session would otherwise keep encoding in the
+    // background for the rest of the app's life.
+    controller.onCancel = () async {
+      final session = _activeSession;
+      if (session == null) return;
+      _activeSession = null;
+      await FFmpegKit.cancel(session.getSessionId());
+    };
 
     Future<void> run() async {
       try {
@@ -68,6 +84,7 @@ class FfmpegDataSource {
             args = _commandBuilder.buildConvertCommand(
               inputPath: inputPath,
               outputPath: outputPath,
+              format: outputFormat,
               settings: settings,
             );
           case OutputKind.audio:
@@ -84,14 +101,28 @@ class FfmpegDataSource {
               outputPath: outputPath,
               options: options,
             );
-            progressDuration = options.end - options.start;
+            final clipDuration = options.end - options.start;
+            // An empty or inverted range means FFmpeg encodes to the end of
+            // the input, so scale progress against the full duration rather
+            // than a non-positive value that would suppress every update.
+            progressDuration =
+                clipDuration > Duration.zero ? clipDuration : totalDuration;
         }
+
+        if (_cancelRequested) {
+          controller.addError(const ConversionCancelledFailure());
+          await controller.close();
+          return;
+        }
+
         stopwatch.start();
 
-        _activeSession = await FFmpegKit.executeWithArgumentsAsync(
+        final session = await FFmpegKit.executeWithArgumentsAsync(
           args,
           (session) async {
             stopwatch.stop();
+            _activeSession = null;
+            if (controller.isClosed) return;
             final returnCode = await session.getReturnCode();
             if (ReturnCode.isSuccess(returnCode)) {
               controller.add(
@@ -114,6 +145,9 @@ class FfmpegDataSource {
           },
           (log) => LoggerService.info(log.getMessage(), tag: 'FFmpeg'),
           (Statistics stats) {
+            // A statistics event can still land after the completion callback
+            // closed the controller; adding to it then throws.
+            if (controller.isClosed) return;
             if (progressDuration.inMilliseconds <= 0) return;
             final percent =
                 (stats.getTime() / progressDuration.inMilliseconds)
@@ -123,6 +157,13 @@ class FfmpegDataSource {
             );
           },
         );
+
+        if (controller.isClosed) return;
+        _activeSession = session;
+        // cancel() may have been called while the session was starting up.
+        if (_cancelRequested) {
+          await FFmpegKit.cancel(session.getSessionId());
+        }
       } catch (e) {
         if (!controller.isClosed) {
           controller.addError(e is Failure ? e : ConversionFailure('$e'));
